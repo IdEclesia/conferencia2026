@@ -6,211 +6,257 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Administración · Conferencia</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--ol:#6C7939;--mt:#F0F3E8;--rj:#A8222B;--tx:#1A1A1A;--bd:#cfd6bb}
+:root{--ol:#6C7939;--od:#5b6630;--mt:#F0F3E8;--rj:#A8222B;--tx:#1A1A1A;--bd:#cfd6bb}
 *{box-sizing:border-box}
 body{margin:0;background:var(--mt);color:var(--tx);font:15px/1.5 Poppins,system-ui,sans-serif}
-header{background:var(--ol);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-header h1{margin:0;font-size:1.1rem;font-weight:800}
-main{max-width:1100px;margin:0 auto;padding:18px 14px 60px}
+header{background:var(--ol);color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.1rem;font-weight:800}#who{margin-right:10px;font-size:.85rem;opacity:.9}
+main{max-width:1100px;margin:0 auto;padding:16px 14px 60px}
 .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
 h2{margin:0 0 12px;font-size:1.05rem;font-weight:800;color:var(--ol)}
 input,select,textarea,button{font:inherit}
 input,select,textarea{padding:9px 11px;border:1.5px solid var(--bd);border-radius:9px;background:#fff;width:100%}
-button{padding:9px 14px;border:0;border-radius:9px;background:var(--ol);color:#fff;font-weight:600;cursor:pointer}
-button.r{background:var(--rj)}button.w{background:#fff;color:var(--ol);border:1.5px solid var(--ol)}
-:focus-visible{outline:3px solid #6C793955}
-#login{max-width:360px;margin:60px auto}#login input{margin-bottom:10px}
+button{padding:8px 14px;border:0;border-radius:9px;background:var(--ol);color:#fff;font-weight:600;cursor:pointer}
+button:hover{background:var(--od)}button.r{background:var(--rj)}button.w{background:#fff;color:var(--ol);border:1.5px solid var(--ol)}button.w:hover{background:var(--mt)}
+:focus-visible{outline:3px solid #6C793966}
+[hidden]{display:none!important}
+#login{max-width:380px;margin:60px auto}#login input{margin-bottom:10px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--bd);margin-bottom:16px;overflow-x:auto}
+.tabs button{background:none;color:#666;border-radius:10px 10px 0 0;white-space:nowrap}.tabs button[aria-selected=true]{background:#fff;color:var(--ol);box-shadow:0 -1px 0 var(--bd)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px}
-.kpi b{display:block;font-size:2rem;font-weight:800;color:var(--ol);line-height:1.1}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;font-size:.85rem}
+.kpi b{display:block;font-size:2rem;font-weight:800;color:var(--ol);line-height:1.1}.kpi.al b{color:var(--rj)}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .bar{display:grid;grid-template-columns:minmax(90px,38%) 1fr 34px;gap:8px;align-items:center;margin:6px 0;font-size:.85rem}
-.bar i{display:block;height:14px;border-radius:7px;background:var(--ol);min-width:3px}
-.bar span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar i{display:block;height:14px;border-radius:7px;background:var(--ol);min-width:3px}.bar span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tools>*{flex:1;min-width:140px}
-.wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:.85rem}
-th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);vertical-align:top}
-th{background:var(--mt);position:sticky;top:0}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);vertical-align:top}th{background:var(--mt);position:sticky;top:0}
 .tag{display:inline-block;background:var(--mt);border-radius:6px;padding:0 6px;margin:1px;font-size:.75rem}
-.msg{min-height:1.3em;color:var(--rj);font-weight:600;margin:6px 0 0}
-[hidden]{display:none!important}
+.chip{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 8px;border-radius:6px;background:#6C793922;color:var(--od);white-space:nowrap}.chip.no{background:#A8222B1c;color:var(--rj)}
+.msg{min-height:1.3em;color:var(--rj);font-weight:600;margin:6px 0 0}.st{font-size:.8rem;color:#555}.st b{color:var(--rj)}
+a{color:var(--od)}
+.big{font-weight:800;font-size:clamp(1.6rem,5vw,2.2rem);line-height:1;margin:0 0 4px;color:var(--tx);letter-spacing:-.02em}.big span{display:block;color:var(--rj)}
+.agenda{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}@media(max-width:760px){.agenda{grid-template-columns:1fr}}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}.cal .h{font-size:.65rem;font-weight:800;color:var(--ol);text-align:center;letter-spacing:.06em}
+.cal button.d{min-height:56px;background:#fff;color:var(--tx);border:1.5px solid var(--bd);border-radius:10px;padding:4px 6px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;font-weight:600}
+.cal button.d:hover{border-color:var(--ol);background:#fff}.cal .d.ev{background:var(--ol);color:#fff;border-color:var(--od)}.cal .d.hoy{box-shadow:0 0 0 3px var(--rj)}.cal .d.sel{outline:3px solid var(--tx);outline-offset:1px}
+.cal .b{font-size:.62rem;font-weight:800;border-radius:5px;padding:0 5px;background:#A8222B22;color:var(--rj)}.cal .b.ok{background:#6C793922;color:var(--od)}.cal .ev .b{background:#fff}
+.leg{font-size:.75rem;color:#555;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+.it{border:1px solid var(--bd);border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:.88rem}.it small{display:block;color:#666}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--tx);color:#fff;padding:10px 18px;border-radius:10px;z-index:40;font-size:.9rem}
 </style>
 </head>
 <body>
-<header><h1>Conferencia · Inscripciones</h1><button class="w" id="out" hidden>Cerrar sesión</button></header>
+<header><h1>Conferencia · Administración</h1><div><span id="who"></span><button class="w" id="out" hidden>Cerrar sesión</button></div></header>
 
 <form id="login" class="card">
   <h2>Ingreso de administradores</h2>
   <input type="email" id="le" placeholder="Correo" autocomplete="username" required>
   <input type="password" id="lp" placeholder="Contraseña" autocomplete="current-password" required>
   <button style="width:100%">Ingresar</button>
-  <p class="msg" id="lm"></p>
+  <p class="msg" id="lm" role="alert"></p>
+  <p style="margin:0;font-size:.85rem"><a href="index.html">← Volver al formulario de inscripción</a></p>
 </form>
 
 <main id="app" hidden>
-  <div class="kpis" id="kpis"></div>
-  <div class="cols">
-    <div class="card"><h2>Asistencia por reunión</h2><div id="bPl"></div></div>
-    <div class="card"><h2>Inscriptos por iglesia</h2><div id="bIg"></div></div>
-    <div class="card"><h2>Inscripciones por día</h2><div id="bDia"></div></div>
-  </div>
+  <nav class="tabs" id="tabs">
+    <button data-t="res" aria-selected="true">Resumen</button><button data-t="agenda" aria-selected="false">Agenda</button>
+    <button data-t="ins" aria-selected="false">Inscriptos</button><button data-t="vol" aria-selected="false">Voluntarios e insumos</button><button data-t="mail" aria-selected="false">Correos</button>
+  </nav>
 
-  <div class="card">
-    <h2>Inscriptos</h2>
-    <div class="tools">
-      <input id="q" placeholder="Buscar por nombre, correo o iglesia">
-      <select id="fi"></select>
-      <select id="fr"><option value="">Regalo: todos</option><option value="0">Regalo sin enviar</option><option value="1">Regalo enviado</option></select>
+  <section data-p="res">
+    <div class="kpis" id="kpis"></div>
+    <div class="cols">
+      <div class="card"><h2>Asistencia por reunión</h2><div id="bPl"></div></div>
+      <div class="card"><h2>Inscriptos por iglesia</h2><div id="bIg"></div></div>
+      <div class="card"><h2>Inscripciones por día</h2><div id="bDia"></div></div>
     </div>
-    <div class="tools">
-      <button class="w" id="csv">Exportar CSV</button>
-      <button class="w" id="cp">Copiar correos</button>
-      <button id="rf">Actualizar</button>
-    </div>
-    <div class="wrap"><table>
-      <thead><tr><th>Nombre</th><th>Correo</th><th>Iglesia</th><th>Reuniones</th><th>Adultos +</th><th>Niños</th><th>Fecha</th><th>Regalo enviado</th></tr></thead>
-      <tbody id="tb"></tbody>
-    </table></div>
-    <p class="msg" id="tm"></p>
-  </div>
+    <div class="card"><h2>Estado de la conexión</h2><p class="st" id="conn"></p><button class="w" id="rf">Actualizar datos</button></div>
+  </section>
 
-  <div class="card">
-    <h2>Escribir a los inscriptos</h2>
-    <p style="margin-top:0">Se enviará a las <b id="nDest">0</b> personas que muestra la lista de arriba (respeta los filtros).</p>
-    <div class="tools">
-      <button class="w" data-t="rec">Plantilla: recordatorio</button>
-      <button class="w" data-t="reg">Plantilla: regalo</button>
+  <section data-p="agenda" hidden>
+    <div class="agenda">
+      <div class="card"><p class="big">NOVIEMBRE<span>EN AGENDA</span></p><p class="st" style="margin:0">Tareas de voluntarios y reuniones de la conferencia, día por día.</p>
+        <div class="cal" id="cal"></div>
+        <div class="leg"><span>■ <b style="color:var(--ol)">Verde:</b> días de conferencia (20 al 22)</span><span><span class="chip no">3 pend.</span> tareas con faltantes</span><span><span class="chip">✓</span> todo cubierto</span></div>
+      </div>
+      <div class="card" id="dayp"></div>
     </div>
-    <input id="asu" placeholder="Asunto" style="margin-bottom:8px">
-    <textarea id="cuerpo" rows="7" placeholder="Mensaje"></textarea>
-    <div class="tools" style="margin-top:10px">
-      <button class="r" id="mail">Abrir en mi correo (con copia oculta)</button>
-      <button class="w" id="cpm">Copiar asunto y mensaje</button>
+  </section>
+
+  <section data-p="ins" hidden>
+    <div class="card">
+      <h2>Inscriptos</h2>
+      <div class="tools"><input id="q" placeholder="Buscar por nombre, correo, WhatsApp o iglesia"><select id="fi"></select>
+        <select id="fr"><option value="">Regalo: todos</option><option value="0">Regalo sin enviar</option><option value="1">Regalo enviado</option></select></div>
+      <div class="tools"><button class="w" id="csv">Exportar CSV</button><button class="w" id="cp">Copiar correos</button></div>
+      <div class="wrap"><table><thead><tr><th>Nombre</th><th>Contacto</th><th>Iglesia</th><th>Reuniones</th><th>Adultos +</th><th>Niños</th><th>Fecha</th><th>Regalo enviado</th></tr></thead><tbody id="tb"></tbody></table></div>
+      <p class="msg" id="tm"></p>
     </div>
-  </div>
+  </section>
+
+  <section data-p="vol" hidden>
+    <div class="cols"><div class="card"><h2>Tareas pendientes por equipo</h2><div id="bEq"></div></div></div>
+    <div class="card">
+      <h2>Tareas y responsables</h2>
+      <div class="tools"><select id="fEq"></select><label style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="vAll" style="width:auto"> Mostrar también las cubiertas</label></div>
+      <div class="wrap"><table><thead><tr><th>Tarea</th><th>Equipo</th><th>Fecha</th><th>Cubierta</th><th>A cargo</th></tr></thead><tbody id="tt"></tbody></table></div>
+    </div>
+    <div class="card"><h2>Insumos</h2><div class="wrap"><table><thead><tr><th>Insumo</th><th>Equipo</th><th>Para</th><th>Entregar a</th><th>Estado</th></tr></thead><tbody id="ti"></tbody></table></div></div>
+    <div class="card"><h2>Voluntarios registrados</h2><div class="tools"><button class="w" id="csvV">Exportar CSV</button></div>
+      <div class="wrap"><table><thead><tr><th>Nombre</th><th>Edad</th><th>WhatsApp</th><th>Tareas</th><th>Registro</th></tr></thead><tbody id="tv"></tbody></table></div></div>
+  </section>
+
+  <section data-p="mail" hidden>
+    <div class="card">
+      <h2>Escribir a los inscriptos</h2>
+      <p style="margin-top:0">Se enviará a las <b id="nDest">0</b> personas que muestra la lista de Inscriptos (respeta los filtros).</p>
+      <div class="tools"><button class="w" data-m="rec">Plantilla: recordatorio</button><button class="w" data-m="reg">Plantilla: regalo</button></div>
+      <input id="asu" placeholder="Asunto" style="margin-bottom:8px"><textarea id="cuerpo" rows="7" placeholder="Mensaje"></textarea>
+      <div class="tools" style="margin-top:10px"><button class="r" id="mail">Abrir en mi correo (con copia oculta)</button><button class="w" id="cpm">Copiar asunto y mensaje</button></div>
+    </div>
+  </section>
 </main>
+<div class="toast" id="toast" hidden></div>
 
 <script>
-// ====== CONFIGURACIÓN (misma que el formulario) ======
-const CFG = { URL: 'https://TU-PROYECTO.supabase.co', KEY: 'TU_ANON_PUBLIC_KEY', GIFT_URL: '' };
+// ====== CONFIGURACIÓN ======
+const CFG = { URL: 'https://davhabqlbtptjdppqfrz.supabase.co', KEY: 'sb_publishable_A_PwLxxk6ay5CfCct9n-vg_2zsggnrt', TABLA: 'inscripciones_asistentes', GIFT_URL: '', ANIO: 2026, MES: 11 };
+const sb = supabase.createClient(CFG.URL, CFG.KEY);
 const PLEN = {p1:'Vie 20/11 · Plenaria 1',p2:'Sáb 21/11 · Plenaria 2',p3:'Sáb 21/11 · Plenaria 3',p4:'Sáb 21/11 · Plenaria 4',p5:'Dom 22/11 · Plenaria 5',p6:'Dom 22/11 · Culto General'};
+const PDIA = {p1:20,p2:21,p3:21,p4:21,p5:22,p6:22}, PHORA = {p1:'19:00 a 21:00',p2:'16:30 a 17:30',p3:'17:30 a 19:00',p4:'19:30 a 21:30',p5:'09:30 a 11:00',p6:'11:00 a 12:00'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let token = sessionStorage.getItem('tk'), rows = [], view = [];
+const pad = n => String(n).padStart(2, '0');
+const wa = n => `<a href="https://wa.me/${String(n).replace(/\D/g, '')}" target="_blank" rel="noopener">${esc(n)}</a>`;
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 3500); }
+let D = {ins: [], t: [], i: [], a: [], v: [], by: {}}, ST = {}, view = [], selDay = 20;
 
-async function api(path, opt = {}) {
- // ====== CONFIGURACIÓN DE SUPABASE ======
-const CFG = {
-  URL: 'https://davhabqlbtptjdppqfrz.supabase.co',
-  KEY: 'sb_publishable_A_PwLxxk6ay5CfCct9n-vg_2zsggnrt', // <-- Tu llave public anon
-  GIFT_URL: '' 
-};
-const PLEN = {p1:'Vie 20/11 · Plenaria 1',p2:'Sáb 21/11 · Plenaria 2',p3:'Sáb 21/11 · Plenaria 3',p4:'Sáb 21/11 · Plenaria 4',p5:'Dom 22/11 · Plenaria 5',p6:'Dom 22/11 · Culto General'};
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let token = sessionStorage.getItem('tk'), rows = [], view = [];
-
-async function api(path, opt = {}) {
-  const r = await fetch(CFG.URL + path, {...opt, headers: {apikey: CFG.KEY, Authorization: 'Bearer ' + (token || CFG.KEY), 'Content-Type': 'application/json', ...(opt.headers || {})}});
-  if (r.status === 401) { logout(); throw new Error('Tu sesión venció. Ingresa de nuevo.'); }
-  return r;
+// ---- acceso
+function showLogin(m) { $('app').hidden = true; $('out').hidden = true; $('who').textContent = ''; $('login').hidden = false; $('lm').textContent = m || ''; }
+async function boot() {
+  const {data: {session}} = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const {data: ok, error} = await sb.rpc('es_admin');
+  if (error || !ok) { await sb.auth.signOut(); return showLogin(error ? 'No se pudo verificar tu permiso (' + error.message + '). ¿Ya se ejecutó admin_setup.sql?' : 'Tu usuario no tiene permiso de administrador. Pide que te agreguen a la lista.'); }
+  $('login').hidden = true; $('app').hidden = false; $('out').hidden = false; $('who').textContent = session.user.email;
+  const n = new Date(); if (n.getFullYear() === CFG.ANIO && n.getMonth() + 1 === CFG.MES) selDay = n.getDate();
+  loadAll();
 }
-function logout() { token = null; sessionStorage.removeItem('tk'); $('app').hidden = true; $('out').hidden = true; $('login').hidden = false; }
-
 $('login').onsubmit = async e => {
   e.preventDefault(); $('lm').textContent = '';
-  try {
-    const r = await fetch(CFG.URL + '/auth/v1/token?grant_type=password', {method: 'POST', headers: {apikey: CFG.KEY, 'Content-Type': 'application/json'}, body: JSON.stringify({email: $('le').value.trim(), password: $('lp').value})});
-    const d = await r.json();
-    if (!r.ok) throw new Error('Correo o contraseña incorrectos.');
-    token = d.access_token; sessionStorage.setItem('tk', token); $('lp').value = ''; load();
-  } catch (x) { $('lm').textContent = x.message; }
+  const {error} = await sb.auth.signInWithPassword({email: $('le').value.trim(), password: $('lp').value});
+  if (error) return ($('lm').textContent = 'Correo o contraseña incorrectos.');
+  $('lp').value = ''; boot();
 };
-$('out').onclick = logout;
+$('out').onclick = async () => { await sb.auth.signOut(); showLogin(); };
 
-async function load() {
-  try {
-    // Busca los datos usando el token de administrador
-    const r = await api('/rest/v1/inscripciones_asistentes?select=*&order=created_at.desc');
-    if (!r.ok) throw new Error('No tienes permisos para ver estos datos o hubo un error de conexión.');
-    rows = await r.json();
-    
-    $('login').hidden = true; $('app').hidden = false; $('out').hidden = false;
-    const igs = [...new Set(rows.map(r => r.iglesia.trim()))].sort();
-    $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
-    stats(); draw();
-  } catch (x) { $('lm').textContent = x.message; $('login').hidden = false; }
+// ---- datos
+const norm = r => ({id: r.id, nombre: r.nombre_completo ?? r.nombre ?? '', email: r.email ?? '', wa: r.whatsapp ?? '', iglesia: (r.iglesia ?? '').trim(), pl: r.plenarias_seleccionadas ?? r.plenarias ?? [],
+  ad: +(r.cantidad_adultos ?? r.adultos_acomp ?? 0), det: r.detalle_ninos ?? r.edades_ninos ?? '', kids: +((/Cantidad:\s*(\d+)/.exec(r.detalle_ninos || '') || [])[1] ?? r.cant_ninos ?? 0), f: r.created_at, reg: !!r.regalo_enviado});
+async function q(t, sel, ord) {
+  const go = o => { const x = sb.from(t).select(sel); return o ? x.order(o, {ascending: o !== 'created_at'}) : x; };
+  let r = await go(ord); if (r.error && ord) r = await go(null);
+  ST[t] = r.error ? r.error.message : r.data.length; return r.data || [];
+}
+async function loadAll() {
+  [D.ins, D.t, D.i, D.a, D.v] = await Promise.all([q(CFG.TABLA, '*', 'created_at'), q('tareas', '*', 'id'), q('insumos', '*', 'id'), q('inscripciones_tarea', 'tarea_id, voluntarios(id,nombre,whatsapp,edad)', null), q('voluntarios', '*', 'created_at')]);
+  D.ins = D.ins.map(norm); D.by = {}; D.a.forEach(x => x.voluntarios && (D.by[x.tarea_id] = D.by[x.tarea_id] || []).push(x.voluntarios));
+  const igs = [...new Set(D.ins.map(r => r.iglesia))].sort(), fe = [...new Set(D.t.map(t => t.equipo))];
+  $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
+  $('fEq').innerHTML = '<option value="">Todos los equipos</option>' + fe.map(i => `<option>${esc(i)}</option>`).join('');
+  render();
+}
+const vols = t => D.by[t.id] || [], ilim = t => t.necesarios >= 50, cubierta = t => ilim(t) ? vols(t).length > 0 : vols(t).length >= t.necesarios;
+const falta = t => ilim(t) ? (vols(t).length ? 0 : 1) : Math.max(0, t.necesarios - vols(t).length);
+const byOrden = (a, b) => a.orden.localeCompare(b.orden) || a.id - b.id;
+function dias(t) {
+  const m = /(\d\d)\/(\d\d)\s*-\s*(\d\d)\/(\d\d)/.exec(t.fecha_texto), y = t.orden.slice(0, 4);
+  if (!m || m[2] !== m[4]) return [t.orden.slice(0, 10)];
+  const o = []; for (let d = +m[1]; d <= +m[3]; d++) o.push(`${y}-${m[2]}-${pad(d)}`); return o;
 }
 
-function bars(el, entries) {
-  const max = Math.max(1, ...entries.map(e => e[1]));
-  el.innerHTML = entries.length ? entries.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p>Todavía no hay datos.</p>';
-}
-function stats() {
-  const adultos = rows.reduce((a, r) => a + (r.cantidad_adultos || 0), 0);
-  
-  // Extraer cantidad de niños del string generado en el form "Cantidad: X. Edades: ..."
-  const ninos = rows.reduce((a, r) => {
-    if (!r.detalle_ninos) return a;
-    const match = r.detalle_ninos.match(/Cantidad:\s*(\d+)/);
-    return a + (match ? parseInt(match[1], 10) : 0);
-  }, 0);
-
-  const igs = {}; rows.forEach(r => { const k = r.iglesia.trim(); igs[k.toLowerCase()] = igs[k.toLowerCase()] || [k, 0]; igs[k.toLowerCase()][1]++; });
-  const k = [[rows.length, 'inscriptos'], [rows.length + adultos + ninos, 'personas en total'], [adultos, 'acompañantes adultos'], [ninos, 'niños'], [Object.keys(igs).length, 'iglesias']];
-  $('kpis').innerHTML = k.map(([n, t]) => `<div class="kpi"><b>${n}</b>${t}</div>`).join('');
-  bars($('bPl'), Object.entries(PLEN).map(([id, t]) => [t, rows.filter(r => r.plenarias_seleccionadas && r.plenarias_seleccionadas.includes(id)).length]));
+// ---- vistas
+function bars(el, e) { const max = Math.max(1, ...e.map(x => x[1])); el.innerHTML = e.length ? e.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p class="st">Todavía no hay datos.</p>'; }
+function render() { vRes(); vAgenda(); vIns(); vVol(); }
+function vRes() {
+  const R = D.ins, ad = R.reduce((a, r) => a + r.ad, 0), ni = R.reduce((a, r) => a + r.kids, 0), igs = {};
+  R.forEach(r => { const k = r.iglesia.toLowerCase(); (igs[k] = igs[k] || [r.iglesia, 0])[1]++; });
+  const med = D.t.filter(t => !ilim(t)), tot = med.reduce((a, t) => a + t.necesarios, 0), ll = med.reduce((a, t) => a + Math.min(vols(t).length, t.necesarios), 0), fi = D.i.filter(i => !i.cubierto_por).length;
+  const k = [[R.length, 'inscriptos'], [R.length + ad + ni, 'personas en total'], [ni, 'niños'], [Object.keys(igs).length, 'iglesias'], [(tot ? Math.round(ll / tot * 100) : 100) + '%', 'tareas cubiertas'], [fi, 'insumos que faltan', fi]];
+  $('kpis').innerHTML = k.map(([n, t, al]) => `<div class="kpi${al ? ' al' : ''}"><b>${n}</b>${t}</div>`).join('');
+  bars($('bPl'), Object.entries(PLEN).map(([id, t]) => [t, R.filter(r => r.pl.includes(id)).length]));
   bars($('bIg'), Object.values(igs).sort((a, b) => b[1] - a[1]).slice(0, 12));
-  const dias = {}; [...rows].reverse().forEach(r => { const d = new Date(r.created_at).toLocaleDateString('es', {day: '2-digit', month: 'short'}); dias[d] = (dias[d] || 0) + 1; });
-  bars($('bDia'), Object.entries(dias));
+  const dd = {}; [...R].reverse().forEach(r => { if (!r.f) return; const d = new Date(r.f).toLocaleDateString('es', {day: '2-digit', month: 'short'}); dd[d] = (dd[d] || 0) + 1; }); bars($('bDia'), Object.entries(dd));
+  $('conn').innerHTML = Object.entries(ST).map(([t, v]) => typeof v === 'number' ? `${esc(t)}: ✔ ${v} filas` : `<b>${esc(t)}: ✖ ${esc(v)}</b>`).join(' · ');
 }
-function filtrar() {
-  const q = $('q').value.toLowerCase(), fi = $('fi').value, fr = $('fr').value;
-  return rows.filter(r => (!q || (r.nombre_completo + r.email + r.iglesia).toLowerCase().includes(q)) && (!fi || r.iglesia.trim() === fi) && (!fr || String(+(r.regalo_enviado || 0)) === fr));
+function vAgenda() {
+  const first = new Date(CFG.ANIO, CFG.MES - 1, 1).getDay(), n = new Date(CFG.ANIO, CFG.MES, 0).getDate(), hoy = new Date(), map = {};
+  D.t.forEach(t => dias(t).forEach(k => (map[k] = map[k] || []).push(t)));
+  let h = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'].map(d => `<div class="h">${d}</div>`).join('') + '<span></span>'.repeat(first);
+  for (let d = 1; d <= n; d++) {
+    const ts = map[`${CFG.ANIO}-${pad(CFG.MES)}-${pad(d)}`] || [], p = ts.filter(t => !cubierta(t)).length, ev = d >= 20 && d <= 22;
+    const isH = hoy.getFullYear() === CFG.ANIO && hoy.getMonth() + 1 === CFG.MES && hoy.getDate() === d;
+    h += `<button class="d${ev ? ' ev' : ''}${isH ? ' hoy' : ''}${d === selDay ? ' sel' : ''}" data-d="${d}" aria-label="Día ${d}"><span>${d}</span>${ts.length ? `<span class="b${p ? '' : ' ok'}">${p ? p + ' pend.' : '✓'}</span>` : '<span></span>'}</button>`;
+  }
+  $('cal').innerHTML = h;
+  const k = `${CFG.ANIO}-${pad(CFG.MES)}-${pad(selDay)}`, ts = (map[k] || []).sort(byOrden), pls = Object.keys(PLEN).filter(id => PDIA[id] === selDay);
+  const wd = new Date(CFG.ANIO, CFG.MES - 1, selDay).toLocaleDateString('es', {weekday: 'long'});
+  $('dayp').innerHTML = `<h2 style="text-transform:capitalize">${wd} ${selDay} de noviembre</h2>` +
+    (pls.length ? '<p class="st" style="margin:0 0 6px"><b>Reuniones de la conferencia</b></p>' + pls.map(id => `<div class="it"><b>${PHORA[id]} hs</b> · ${esc(PLEN[id].split('· ')[1])}<small>${D.ins.filter(r => r.pl.includes(id)).length} inscriptos</small></div>`).join('') : '') +
+    '<p class="st" style="margin:10px 0 6px"><b>Tareas de voluntarios</b></p>' +
+    (ts.map(t => `<div class="it"><b>${esc(t.titulo)}</b> <span class="chip${cubierta(t) ? '' : ' no'}">${cubierta(t) ? 'Cubierta' : ilim(t) ? 'Nadie anotado' : 'Faltan ' + falta(t)}</span><small>${esc(t.equipo)} · ${esc(t.fecha_texto)}</small><small>${vols(t).map(v => esc(v.nombre)).join(', ') || 'Sin responsables'}</small></div>`).join('') || '<p class="st">Sin tareas este día.</p>');
 }
-function draw() {
+function filtrar() { const s = $('q').value.toLowerCase(), fi = $('fi').value, fr = $('fr').value; return D.ins.filter(r => (!s || (r.nombre + r.email + r.wa + r.iglesia).toLowerCase().includes(s)) && (!fi || r.iglesia === fi) && (!fr || String(+r.reg) === fr)); }
+function vIns() {
   view = filtrar(); $('nDest').textContent = view.length;
-  $('tb').innerHTML = view.map(r => `<tr><td>${esc(r.nombre_completo)}</td><td>${esc(r.email)}<br><small>${esc(r.whatsapp)}</small></td><td>${esc(r.iglesia)}</td>
-    <td>${(r.plenarias_seleccionadas || []).map(p => `<span class="tag">${esc((PLEN[p] || p).replace(' · ', ' '))}</span>`).join('')}</td>
-    <td>${r.cantidad_adultos || 0}</td><td>${r.detalle_ninos ? esc(r.detalle_ninos) : '—'}</td>
-    <td>${new Date(r.created_at).toLocaleDateString('es')}</td>
-    <td><input type="checkbox" data-id="${esc(r.id)}" ${r.regalo_enviado ? 'checked' : ''} style="width:auto" aria-label="Regalo enviado a ${esc(r.nombre_completo)}"></td></tr>`).join('') || '<tr><td colspan="8">Sin resultados.</td></tr>';
+  $('tb').innerHTML = view.map(r => `<tr><td>${esc(r.nombre)}</td><td>${esc(r.email)}<br>${r.wa ? wa(r.wa) : ''}</td><td>${esc(r.iglesia)}</td><td>${r.pl.map(p => `<span class="tag">${esc((PLEN[p] || p).replace(' · ', ' '))}</span>`).join('')}</td><td>${r.ad}</td><td>${r.kids ? esc(r.det) : '—'}</td><td>${r.f ? new Date(r.f).toLocaleDateString('es') : ''}</td>
+    <td><input type="checkbox" data-id="${esc(r.id)}" ${r.reg ? 'checked' : ''} style="width:auto" aria-label="Regalo enviado a ${esc(r.nombre)}"></td></tr>`).join('') || '<tr><td colspan="8">Sin resultados.</td></tr>';
 }
-['q', 'fi', 'fr'].forEach(id => $(id).oninput = draw);
-$('rf').onclick = load;
+function vVol() {
+  const eq = {}; D.t.filter(t => !cubierta(t)).forEach(t => eq[t.equipo] = (eq[t.equipo] || 0) + 1); bars($('bEq'), Object.entries(eq).sort((a, b) => b[1] - a[1]));
+  const fe = $('fEq').value, all = $('vAll').checked, ts = D.t.filter(t => (!fe || t.equipo === fe) && (all || !cubierta(t))).sort(byOrden);
+  $('tt').innerHTML = ts.map(t => `<tr><td><b>${esc(t.titulo)}</b></td><td>${esc(t.equipo)}</td><td>${esc(t.fecha_texto)}</td><td><span class="chip${cubierta(t) ? '' : ' no'}">${vols(t).length} / ${ilim(t) ? '∞' : t.necesarios}</span></td><td>${vols(t).map(v => esc(v.nombre) + ' (' + wa(v.whatsapp) + ')').join('<br>') || '—'}</td></tr>`).join('') || '<tr><td colspan="5">Nada pendiente 🎉</td></tr>';
+  $('ti').innerHTML = [...D.i].sort((a, b) => !!a.cubierto_por - !!b.cubierto_por).map(i => `<tr><td><b>${esc(i.nombre)}</b></td><td>${esc(i.equipo)}</td><td>${esc(i.fecha_texto)}</td><td>${esc(i.entregar_a)}</td><td>${i.cubierto_por ? `<span class="chip">Trae: ${esc(i.cubierto_nombre)}</span>` : '<span class="chip no">Falta</span>'}</td></tr>`).join('') || '<tr><td colspan="5">Sin insumos.</td></tr>';
+  const cnt = {}; D.a.forEach(x => x.voluntarios && (cnt[x.voluntarios.id] = (cnt[x.voluntarios.id] || 0) + 1));
+  $('tv').innerHTML = D.v.map(v => `<tr><td>${esc(v.nombre)}</td><td>${esc(v.edad)}</td><td>${wa(v.whatsapp)}</td><td>${cnt[v.id] || 0}</td><td>${new Date(v.created_at).toLocaleDateString('es')}</td></tr>`).join('') || '<tr><td colspan="5">Todavía no hay voluntarios.</td></tr>';
+}
+
+// ---- eventos
+$('tabs').onclick = e => { const t = e.target.dataset.t; if (!t) return; document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === t)); document.querySelectorAll('[data-p]').forEach(s => s.hidden = s.dataset.p !== t); };
+$('cal').onclick = e => { const b = e.target.closest('[data-d]'); if (b) { selDay = +b.dataset.d; vAgenda(); } };
+['q', 'fi', 'fr'].forEach(id => $(id).oninput = vIns); ['fEq', 'vAll'].forEach(id => $(id).onchange = vVol);
+$('rf').onclick = () => { loadAll(); toast('Datos actualizados.'); };
 $('tb').onchange = async e => {
   const c = e.target; if (!c.dataset.id) return;
-  const r = await api('/rest/v1/inscripciones_asistentes?id=eq.' + encodeURIComponent(c.dataset.id), {method: 'PATCH', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({regalo_enviado: c.checked})});
-  if (!r.ok) { c.checked = !c.checked; $('tm').textContent = 'No se pudo guardar el cambio.'; return; }
-  rows.find(x => String(x.id) === String(c.dataset.id)).regalo_enviado = c.checked; $('tm').textContent = '';
+  const {error} = await sb.from(CFG.TABLA).update({regalo_enviado: c.checked}).eq('id', c.dataset.id);
+  if (error) { c.checked = !c.checked; return toast('No se pudo guardar: ' + error.message); }
+  D.ins.find(x => String(x.id) === c.dataset.id).reg = c.checked;
 };
-
-const copiar = async (t, msg) => { try { await navigator.clipboard.writeText(t); $('tm').textContent = msg; } catch { $('tm').textContent = 'No se pudo copiar. Selecciona el texto a mano.'; } };
+const copiar = async (t, m) => { try { await navigator.clipboard.writeText(t); toast(m); } catch { toast('No se pudo copiar. Selecciona el texto a mano.'); } };
+function csv(name, head, rows) {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + [head, ...rows].map(r => r.map(q).join(',')).join('\n')], {type: 'text/csv'})); a.download = name; a.click();
+}
 $('cp').onclick = () => copiar(view.map(r => r.email).join(', '), `Copiados ${view.length} correos.`);
-$('csv').onclick = () => {
-  const h = ['Nombre', 'Correo', 'WhatsApp', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Detalle Niños', 'Fecha', 'Regalo enviado'];
-  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const l = view.map(r => [r.nombre_completo, r.email, r.whatsapp, r.iglesia, (r.plenarias_seleccionadas || []).map(p => PLEN[p] || p).join(' | '), r.cantidad_adultos || 0, r.detalle_ninos || '', r.created_at, r.regalo_enviado ? 'Sí' : 'No'].map(q).join(','));
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\ufeff' + [h.map(q).join(','), ...l].join('\n')], {type: 'text/csv'}));
-  a.download = 'inscriptos-conferencia.csv'; a.click();
-};
+$('csv').onclick = () => csv('inscriptos-conferencia.csv', ['Nombre', 'Correo', 'WhatsApp', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Niños', 'Detalle niños', 'Fecha', 'Regalo enviado'], view.map(r => [r.nombre, r.email, r.wa, r.iglesia, r.pl.map(p => PLEN[p] || p).join(' | '), r.ad, r.kids, r.det, r.f, r.reg ? 'Sí' : 'No']));
+$('csvV').onclick = () => csv('voluntarios.csv', ['Nombre', 'Edad', 'WhatsApp', 'Tareas', 'Registro'], D.v.map(v => [v.nombre, v.edad, v.whatsapp, D.a.filter(x => x.voluntarios && x.voluntarios.id === v.id).length, v.created_at]));
 
 const TPL = {
   rec: ['Te esperamos: Conferencia Instrumentos en las Manos del Redentor', 'Hola,\n\nTe recordamos que la conferencia con Lois Kehlenbrink (Paul Tripp Ministries) es del 20 al 22 de noviembre en el Auditorio de la Iglesia Evangelio & Vida.\n\nViernes 20/11: 19:00 hs\nSábado 21/11: desde las 16:30 hs\nDomingo 22/11: desde las 09:30 hs\n\nUbicación: https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8\n\nTe esperamos con mucha alegría.\nIglesia Evangelio & Vida'],
   reg: ['Tu regalo de bienvenida para la conferencia', 'Hola,\n\nGracias por inscribirte a la conferencia Instrumentos en las Manos del Redentor. Aquí está tu regalo de bienvenida:\n\n' + (CFG.GIFT_URL || '[pegar aquí el enlace del regalo]') + '\n\nNos vemos del 20 al 22 de noviembre.\nIglesia Evangelio & Vida']
 };
-document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { [$('asu').value, $('cuerpo').value] = TPL[b.dataset.t]; });
+document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { [$('asu').value, $('cuerpo').value] = TPL[b.dataset.m]; });
 $('mail').onclick = () => {
-  const bcc = view.map(r => r.email).join(',');
-  if (!bcc) return ($('tm').textContent = 'No hay destinatarios con los filtros actuales.');
+  const bcc = view.map(r => r.email).join(','); if (!bcc) return toast('No hay destinatarios con los filtros actuales.');
   location.href = 'mailto:?bcc=' + encodeURIComponent(bcc) + '&subject=' + encodeURIComponent($('asu').value) + '&body=' + encodeURIComponent($('cuerpo').value);
 };
 $('cpm').onclick = () => copiar($('asu').value + '\n\n' + $('cuerpo').value, 'Asunto y mensaje copiados.');
-
-if (token) load();
+sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') showLogin(); });
+boot();
 </script>
 </body>
 </html>
