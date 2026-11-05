@@ -6,6 +6,8 @@
 <title>Inscripción · Instrumentos en las Manos del Redentor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<!-- SDK de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--ol:#6C7939;--mt:#F0F3E8;--rj:#A8222B;--tx:#1A1A1A;--bd:#cfd6bb}
 *{box-sizing:border-box}
@@ -22,7 +24,7 @@ fieldset{border:0;padding:0;margin:0 0 26px}
 legend{font-weight:800;font-size:1.15rem;color:var(--ol);padding:0;margin-bottom:12px}
 label.f{display:block;font-weight:600;margin:14px 0 4px}
 .hint{display:block;font-weight:400;font-size:.85rem;color:#555;margin-top:2px}
-input[type=text],input[type=email],input[type=number],select,textarea{width:100%;font:inherit;padding:11px 12px;border:1.5px solid var(--bd);border-radius:10px;background:#fff;color:var(--tx)}
+input[type=text],input[type=email],input[type=number],input[type=tel],select,textarea{width:100%;font:inherit;padding:11px 12px;border:1.5px solid var(--bd);border-radius:10px;background:#fff;color:var(--tx)}
 textarea{min-height:76px;resize:vertical}
 input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:3px solid #6C793955;border-color:var(--ol)}
 .chk{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1.5px solid var(--bd);border-radius:10px;margin-bottom:8px;cursor:pointer}
@@ -42,9 +44,9 @@ button[disabled]{opacity:.6;cursor:wait}
 </style>
 </head>
 <body>
-<div class="top"><img src="assets/logo.png" alt="Iglesia Evangelio &amp; Vida"></div>
+<div class="top"><img src="logo.png" alt="Iglesia Evangelio &amp; Vida"></div>
 <main>
-  <img class="flyer" src="assets/flyer.jpg" alt="Conferencia Instrumentos en las Manos del Redentor, con Lois Kehlenbrink. Del 20 al 22 de noviembre">
+  <img class="flyer" src="flyer.jpg" alt="Conferencia Instrumentos en las Manos del Redentor, con Lois Kehlenbrink. Del 20 al 22 de noviembre">
   <h1>Conferencia: Instrumentos en las Manos del Redentor</h1>
   <p class="lead">¡Te damos la bienvenida! Acompáñanos del 20 al 22 de noviembre a vivir un tiempo de transformación junto a la conferencista Lois Kehlenbrink (Paul Tripp Ministries).</p>
   <p class="lugar">📍 Auditorio Iglesia Evangelio &amp; Vida</p>
@@ -57,6 +59,8 @@ button[disabled]{opacity:.6;cursor:wait}
       <input type="text" id="nombre" autocomplete="name" required>
       <label class="f" for="email">Correo electrónico<span class="hint">Aquí te enviaremos el recordatorio del evento y tu regalo de bienvenida.</span></label>
       <input type="email" id="email" autocomplete="email" required>
+      <label class="f" for="whatsapp">WhatsApp / Teléfono</label>
+      <input type="tel" id="whatsapp" placeholder="Ej: +595 981 123456" autocomplete="tel" required>
       <label class="f" for="ig">Iglesia a la que perteneces<span class="hint">Escribe el nombre de tu iglesia. Ej: Iglesia Evangelio &amp; Vida</span></label>
       <input type="text" id="ig" autocomplete="organization" maxlength="120" required>
     </fieldset>
@@ -108,14 +112,18 @@ button[disabled]{opacity:.6;cursor:wait}
 </main>
 
 <script>
-// ====== CONFIGURACIÓN: completar con los datos de tu proyecto Supabase ======
+// ====== CONFIGURACIÓN DE SUPABASE ======
 const CFG = {
-  URL: 'https://TU-PROYECTO.supabase.co',
-  KEY: 'TU_ANON_PUBLIC_KEY',
-  GIFT_URL: '', // link al regalo (PDF). Si queda vacío, se avisa que llegará por correo.
+  URL: 'https://davhabqlbtptjdppqfrz.supabase.co',
+  KEY: 'PEGA_AQUI_TU_ANON_PUBLIC_KEY', // Copiar de Supabase -> Settings -> API -> anon public
+  GIFT_URL: '', // Si agregas un link a un PDF de regalo
   MAPS: 'https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8',
   IG: 'https://www.instagram.com/iglesiaevangelioyvida/'
 };
+
+// Inicializar cliente Supabase
+const _supabase = supabase.createClient(CFG.URL, CFG.KEY);
+
 const PLEN = [
   ['p1','Viernes 20/11: Plenaria 1','19:00 a 21:00 hs'],
   ['p2','Sábado 21/11: Plenaria 2','16:30 a 17:30 hs'],
@@ -139,39 +147,62 @@ const num = (id, max) => Math.max(0, Math.min(max, parseInt($(id).value, 10) || 
 $('f').onsubmit = async e => {
   e.preventDefault(); showErr('');
   if ($('web').value) return; // anti-spam
-  const nombre = $('nombre').value.trim(), email = $('email').value.trim().toLowerCase();
+
+  const nombre = $('nombre').value.trim();
+  const email = $('email').value.trim().toLowerCase();
+  const whatsapp = $('whatsapp').value.trim();
   const iglesia = $('ig').value.trim();
   const plenarias = [...document.querySelectorAll('[name=pl]:checked')].map(c => c.value);
+
   if (nombre.length < 2) return showErr('Escribe tu nombre y apellido.');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showErr('Revisa tu correo: parece incompleto.');
+  if (whatsapp.length < 6) return showErr('Ingresa un número de WhatsApp válido.');
   if (iglesia.length < 2) return showErr('Indica a qué iglesia perteneces.');
   if (!plenarias.length) return showErr('Marca al menos una reunión a la que asistirás.');
+
   const grupo = $('acomp').value === 'si';
   const ninos = grupo && document.querySelector('[name=ninos]:checked').value === 'si';
   if (ninos && !$('edades').value.trim()) return showErr('Cuéntanos las edades de los niños.');
-  const body = {
-    nombre, email, iglesia, plenarias,
+
+  const registro = {
+    nombre_completo: nombre,
+    email: email,
+    whatsapp: whatsapp,
+    iglesia: iglesia,
+    plenarias_seleccionadas: plenarias,
     viene_acompanado: grupo,
-    adultos_acomp: grupo ? num('adultos', 30) : 0,
-    trae_ninos: ninos,
-    cant_ninos: ninos ? Math.max(1, num('cant', 30)) : 0,
-    edades_ninos: ninos ? $('edades').value.trim() : null
+    cantidad_adultos: grupo ? num('adultos', 30) : 0,
+    necesita_cuidado_ninos: ninos,
+    detalle_ninos: ninos ? `Cantidad: ${Math.max(1, num('cant', 30))}. Edades: ${$('edades').value.trim()}` : null
   };
-  $('send').disabled = true; $('send').textContent = 'Enviando…';
+
+  $('send').disabled = true; 
+  $('send').textContent = 'Enviando…';
+
   try {
-    const r = await fetch(CFG.URL + '/rest/v1/inscripciones', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json', apikey: CFG.KEY, Authorization: 'Bearer ' + CFG.KEY, Prefer: 'return=minimal'},
-      body: JSON.stringify(body)
-    });
-    if (r.status === 409) throw new Error('Este correo ya está inscripto. Si necesitas cambiar algo, escríbenos por Instagram.');
-    if (!r.ok) throw new Error('No pudimos guardar tu inscripción. Intenta de nuevo en un momento.');
-    $('f').hidden = true; $('ok').hidden = false;
-    if (CFG.GIFT_URL) { $('giftBtn').href = CFG.GIFT_URL; $('giftBtn').hidden = false; $('regalo').innerHTML = '🎁 <b>Tu regalo de bienvenida</b> está listo:'; }
+    const { data, error } = await _supabase
+      .from('inscripciones_asistentes')
+      .insert([registro]);
+
+    if (error) {
+      if (error.code === '23505') throw new Error('Este correo ya está inscrito.');
+      throw new Error(error.message || 'Error al guardar la inscripción.');
+    }
+
+    $('f').hidden = true; 
+    $('ok').hidden = false;
+
+    if (CFG.GIFT_URL) { 
+      $('giftBtn').href = CFG.GIFT_URL; 
+      $('giftBtn').hidden = false; 
+      $('regalo').innerHTML = '🎁 <b>Tu regalo de bienvenida</b> está listo:'; 
+    }
     $('ok').scrollIntoView({behavior: 'smooth'});
+
   } catch (x) {
-    showErr(x.message.startsWith('Failed') ? 'Sin conexión. Revisa tu internet e intenta de nuevo.' : x.message);
-    $('send').disabled = false; $('send').textContent = 'Reservar mi lugar';
+    showErr(x.message || 'Sin conexión. Revisa tu internet e intenta de nuevo.');
+    $('send').disabled = false; 
+    $('send').textContent = 'Reservar mi lugar';
   }
 };
 </script>
