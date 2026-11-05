@@ -101,6 +101,18 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 let token = sessionStorage.getItem('tk'), rows = [], view = [];
 
 async function api(path, opt = {}) {
+ // ====== CONFIGURACIÓN DE SUPABASE ======
+const CFG = {
+  URL: 'https://davhabqlbtptjdppqfrz.supabase.co',
+  KEY: 'sb_publishable_A_PwLxxk6ay5CfCct9n-vg_2zsggnrt', // <-- Tu llave public anon
+  GIFT_URL: '' 
+};
+const PLEN = {p1:'Vie 20/11 · Plenaria 1',p2:'Sáb 21/11 · Plenaria 2',p3:'Sáb 21/11 · Plenaria 3',p4:'Sáb 21/11 · Plenaria 4',p5:'Dom 22/11 · Plenaria 5',p6:'Dom 22/11 · Culto General'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token = sessionStorage.getItem('tk'), rows = [], view = [];
+
+async function api(path, opt = {}) {
   const r = await fetch(CFG.URL + path, {...opt, headers: {apikey: CFG.KEY, Authorization: 'Bearer ' + (token || CFG.KEY), 'Content-Type': 'application/json', ...(opt.headers || {})}});
   if (r.status === 401) { logout(); throw new Error('Tu sesión venció. Ingresa de nuevo.'); }
   return r;
@@ -120,9 +132,11 @@ $('out').onclick = logout;
 
 async function load() {
   try {
-    const r = await api('/rest/v1/inscripciones?select=*&order=created_at.desc');
-    if (!r.ok) throw new Error('No se pudieron cargar los datos.');
+    // Busca los datos usando el token de administrador
+    const r = await api('/rest/v1/inscripciones_asistentes?select=*&order=created_at.desc');
+    if (!r.ok) throw new Error('No tienes permisos para ver estos datos o hubo un error de conexión.');
     rows = await r.json();
+    
     $('login').hidden = true; $('app').hidden = false; $('out').hidden = false;
     const igs = [...new Set(rows.map(r => r.iglesia.trim()))].sort();
     $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
@@ -135,42 +149,50 @@ function bars(el, entries) {
   el.innerHTML = entries.length ? entries.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p>Todavía no hay datos.</p>';
 }
 function stats() {
-  const adultos = rows.reduce((a, r) => a + r.adultos_acomp, 0), ninos = rows.reduce((a, r) => a + r.cant_ninos, 0);
+  const adultos = rows.reduce((a, r) => a + (r.cantidad_adultos || 0), 0);
+  
+  // Extraer cantidad de niños del string generado en el form "Cantidad: X. Edades: ..."
+  const ninos = rows.reduce((a, r) => {
+    if (!r.detalle_ninos) return a;
+    const match = r.detalle_ninos.match(/Cantidad:\s*(\d+)/);
+    return a + (match ? parseInt(match[1], 10) : 0);
+  }, 0);
+
   const igs = {}; rows.forEach(r => { const k = r.iglesia.trim(); igs[k.toLowerCase()] = igs[k.toLowerCase()] || [k, 0]; igs[k.toLowerCase()][1]++; });
   const k = [[rows.length, 'inscriptos'], [rows.length + adultos + ninos, 'personas en total'], [adultos, 'acompañantes adultos'], [ninos, 'niños'], [Object.keys(igs).length, 'iglesias']];
   $('kpis').innerHTML = k.map(([n, t]) => `<div class="kpi"><b>${n}</b>${t}</div>`).join('');
-  bars($('bPl'), Object.entries(PLEN).map(([id, t]) => [t, rows.filter(r => r.plenarias.includes(id)).length]));
+  bars($('bPl'), Object.entries(PLEN).map(([id, t]) => [t, rows.filter(r => r.plenarias_seleccionadas && r.plenarias_seleccionadas.includes(id)).length]));
   bars($('bIg'), Object.values(igs).sort((a, b) => b[1] - a[1]).slice(0, 12));
   const dias = {}; [...rows].reverse().forEach(r => { const d = new Date(r.created_at).toLocaleDateString('es', {day: '2-digit', month: 'short'}); dias[d] = (dias[d] || 0) + 1; });
   bars($('bDia'), Object.entries(dias));
 }
 function filtrar() {
   const q = $('q').value.toLowerCase(), fi = $('fi').value, fr = $('fr').value;
-  return rows.filter(r => (!q || (r.nombre + r.email + r.iglesia).toLowerCase().includes(q)) && (!fi || r.iglesia.trim() === fi) && (!fr || String(+r.regalo_enviado) === fr));
+  return rows.filter(r => (!q || (r.nombre_completo + r.email + r.iglesia).toLowerCase().includes(q)) && (!fi || r.iglesia.trim() === fi) && (!fr || String(+(r.regalo_enviado || 0)) === fr));
 }
 function draw() {
   view = filtrar(); $('nDest').textContent = view.length;
-  $('tb').innerHTML = view.map(r => `<tr><td>${esc(r.nombre)}</td><td>${esc(r.email)}</td><td>${esc(r.iglesia)}</td>
-    <td>${r.plenarias.map(p => `<span class="tag">${esc((PLEN[p] || p).replace(' · ', ' '))}</span>`).join('')}</td>
-    <td>${r.adultos_acomp}</td><td>${r.cant_ninos ? r.cant_ninos + ' (' + esc(r.edades_ninos) + ')' : '—'}</td>
+  $('tb').innerHTML = view.map(r => `<tr><td>${esc(r.nombre_completo)}</td><td>${esc(r.email)}<br><small>${esc(r.whatsapp)}</small></td><td>${esc(r.iglesia)}</td>
+    <td>${(r.plenarias_seleccionadas || []).map(p => `<span class="tag">${esc((PLEN[p] || p).replace(' · ', ' '))}</span>`).join('')}</td>
+    <td>${r.cantidad_adultos || 0}</td><td>${r.detalle_ninos ? esc(r.detalle_ninos) : '—'}</td>
     <td>${new Date(r.created_at).toLocaleDateString('es')}</td>
-    <td><input type="checkbox" data-id="${esc(r.id)}" ${r.regalo_enviado ? 'checked' : ''} style="width:auto" aria-label="Regalo enviado a ${esc(r.nombre)}"></td></tr>`).join('') || '<tr><td colspan="8">Sin resultados.</td></tr>';
+    <td><input type="checkbox" data-id="${esc(r.id)}" ${r.regalo_enviado ? 'checked' : ''} style="width:auto" aria-label="Regalo enviado a ${esc(r.nombre_completo)}"></td></tr>`).join('') || '<tr><td colspan="8">Sin resultados.</td></tr>';
 }
 ['q', 'fi', 'fr'].forEach(id => $(id).oninput = draw);
 $('rf').onclick = load;
 $('tb').onchange = async e => {
   const c = e.target; if (!c.dataset.id) return;
-  const r = await api('/rest/v1/inscripciones?id=eq.' + encodeURIComponent(c.dataset.id), {method: 'PATCH', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({regalo_enviado: c.checked})});
+  const r = await api('/rest/v1/inscripciones_asistentes?id=eq.' + encodeURIComponent(c.dataset.id), {method: 'PATCH', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({regalo_enviado: c.checked})});
   if (!r.ok) { c.checked = !c.checked; $('tm').textContent = 'No se pudo guardar el cambio.'; return; }
-  rows.find(x => x.id === c.dataset.id).regalo_enviado = c.checked; $('tm').textContent = '';
+  rows.find(x => String(x.id) === String(c.dataset.id)).regalo_enviado = c.checked; $('tm').textContent = '';
 };
 
 const copiar = async (t, msg) => { try { await navigator.clipboard.writeText(t); $('tm').textContent = msg; } catch { $('tm').textContent = 'No se pudo copiar. Selecciona el texto a mano.'; } };
 $('cp').onclick = () => copiar(view.map(r => r.email).join(', '), `Copiados ${view.length} correos.`);
 $('csv').onclick = () => {
-  const h = ['Nombre', 'Correo', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Niños', 'Edades niños', 'Fecha', 'Regalo enviado'];
+  const h = ['Nombre', 'Correo', 'WhatsApp', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Detalle Niños', 'Fecha', 'Regalo enviado'];
   const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const l = view.map(r => [r.nombre, r.email, r.iglesia, r.plenarias.map(p => PLEN[p] || p).join(' | '), r.adultos_acomp, r.cant_ninos, r.edades_ninos, r.created_at, r.regalo_enviado ? 'Sí' : 'No'].map(q).join(','));
+  const l = view.map(r => [r.nombre_completo, r.email, r.whatsapp, r.iglesia, (r.plenarias_seleccionadas || []).map(p => PLEN[p] || p).join(' | '), r.cantidad_adultos || 0, r.detalle_ninos || '', r.created_at, r.regalo_enviado ? 'Sí' : 'No'].map(q).join(','));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff' + [h.map(q).join(','), ...l].join('\n')], {type: 'text/csv'}));
   a.download = 'inscriptos-conferencia.csv'; a.click();
