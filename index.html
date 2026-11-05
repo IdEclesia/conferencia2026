@@ -41,6 +41,9 @@ button[disabled]{opacity:.6;cursor:wait}
 .ok h2{font-weight:800;color:var(--ol);margin:0 0 8px;font-size:1.6rem}
 .ok .datos{background:var(--mt);border-radius:10px;padding:12px 14px;margin:14px 0}
 .hp{position:absolute;left:-9999px}
+/* Estilo para los inputs de edades dinámicos */
+.grid-edades { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 8px; }
+.grid-edades label { font-size: 0.85rem; color: #555; display: block; margin-bottom: 2px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -77,19 +80,38 @@ button[disabled]{opacity:.6;cursor:wait}
         <option value="no">Vengo solo/a</option>
         <option value="si">Vengo en grupo / familia</option>
       </select>
+      
       <div id="grupo" class="sub" hidden>
         <label class="f" for="adultos">Cantidad de acompañantes adultos<span class="hint">Sin contarte a ti.</span></label>
         <input type="number" id="adultos" min="0" max="30" value="0" inputmode="numeric">
+        
         <label class="f">¿Traerás niños?</label>
         <div class="row">
           <label class="chk"><input type="radio" name="ninos" value="si"> Sí</label>
           <label class="chk"><input type="radio" name="ninos" value="no" checked> No</label>
         </div>
+        
         <div id="ninosBox" hidden>
           <label class="f" for="cant">¿Cuántos niños asistirán?</label>
-          <input type="number" id="cant" min="1" max="30" value="1" inputmode="numeric">
-          <label class="f" for="edades">¿Qué edades tienen?<span class="hint">Ej: 2 niños (4 años y 8 años)</span></label>
-          <textarea id="edades" maxlength="300"></textarea>
+          <select id="cant">
+            <option value="1">1 niño</option>
+            <option value="2">2 niños</option>
+            <option value="3">3 niños</option>
+            <option value="4">4 niños</option>
+            <option value="5">5 niños</option>
+            <option value="6">6 niños</option>
+            <option value="7">7 niños</option>
+            <option value="8">8 niños</option>
+            <option value="9">9 niños</option>
+            <option value="10">10 niños</option>
+            <option value="11">11 niños</option>
+            <option value="12">12 niños</option>
+          </select>
+          
+          <label class="f" style="margin-top:16px">¿Qué edades tienen?</label>
+          <div id="edadesBox" class="grid-edades">
+            <!-- Los inputs se generan por JS aquí -->
+          </div>
         </div>
       </div>
     </fieldset>
@@ -115,30 +137,43 @@ button[disabled]{opacity:.6;cursor:wait}
 // ====== CONFIGURACIÓN DE SUPABASE ======
 const CFG = {
   URL: 'https://davhabqlbtptjdppqfrz.supabase.co',
-  KEY: 'sb_publishable_A_PwLxxk6ay5CfCct9n-vg_2zsggnrt', // <-- ¡Aquí estaba el error! Faltaba cerrar la comilla.
+  KEY: 'sb_publishable_A_PwLxxk6ay5CfCct9n-vg_2zsggnrt', 
   GIFT_URL: '', 
   MAPS: 'https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8',
   IG: 'https://www.instagram.com/iglesiaevangelioyvida/'
 };
 
-// Inicializar cliente Supabase
 const _supabase = supabase.createClient(CFG.URL, CFG.KEY);
-
 const PLEN = [
-  ['p1','Viernes 20/11: Plenaria 1','19:00 hs'],
-  ['p2','Sábado 21/11: Plenaria 2','16:30 hs'],
-  ['p3','Sábado 21/11: Plenaria 3','17:30 hs'],
-  ['p4','Sábado 21/11: Plenaria 4','19:30 hs'],
-  ['p5','Domingo 22/11: Plenaria 5','09:30 hs'],
-  ['p6','Domingo 22/11: Culto General','11:00 hs']
+  ['p1','Viernes 20/11: Plenaria 1','19:00 a 21:00 hs'],
+  ['p2','Sábado 21/11: Plenaria 2','16:30 a 17:30 hs'],
+  ['p3','Sábado 21/11: Plenaria 3','17:30 a 19:00 hs'],
+  ['p4','Sábado 21/11: Plenaria 4','19:30 a 21:30 hs'],
+  ['p5','Domingo 22/11: Plenaria 5','09:30 a 11:00 hs'],
+  ['p6','Domingo 22/11: Culto General','11:00 a 12:00 hs']
 ];
 const $ = id => document.getElementById(id);
 $('pl').innerHTML = PLEN.map(([k,t,h]) => `<label class="chk"><input type="checkbox" name="pl" value="${k}"><span>${t}<small>${h}</small></span></label>`).join('');
 $('mapBtn').href = CFG.MAPS; $('igBtn').href = CFG.IG;
 
+// Lógica para mostrar/ocultar acompañantes
 $('acomp').onchange = () => { $('grupo').hidden = $('acomp').value !== 'si'; };
+
+// Lógica para generar los inputs dinámicos de las edades
+const renderEdades = () => {
+  const cantidad = parseInt($('cant').value, 10);
+  $('edadesBox').innerHTML = Array.from({length: cantidad}, (_, i) => 
+    `<div><label>Hijo ${i+1}</label><input type="number" class="edad-nino" min="0" max="17" placeholder="Edad" required></div>`
+  ).join('');
+};
+
+$('cant').onchange = renderEdades;
+
+// Mostrar caja de niños y crear los inputs la primera vez que se selecciona "Sí"
 document.querySelectorAll('[name=ninos]').forEach(r => r.onchange = () => {
-  $('ninosBox').hidden = document.querySelector('[name=ninos]:checked').value !== 'si';
+  const mostrar = document.querySelector('[name=ninos]:checked').value === 'si';
+  $('ninosBox').hidden = !mostrar;
+  if (mostrar) renderEdades();
 });
 
 const showErr = m => { $('err').textContent = m; $('err').hidden = !m; };
@@ -162,7 +197,21 @@ $('f').onsubmit = async e => {
 
   const grupo = $('acomp').value === 'si';
   const ninos = grupo && document.querySelector('[name=ninos]:checked').value === 'si';
-  if (ninos && !$('edades').value.trim()) return showErr('Cuéntanos las edades de los niños.');
+  let detalle_ninos_str = null;
+
+  if (ninos) {
+    const inputsEdades = document.querySelectorAll('.edad-nino');
+    let arregloEdades = [];
+    let errorEdad = false;
+    
+    inputsEdades.forEach((inp, idx) => {
+      if (inp.value === '') errorEdad = true;
+      arregloEdades.push(`Hijo ${idx+1} (${inp.value} años)`);
+    });
+
+    if (errorEdad) return showErr('Por favor completa la edad de todos los niños.');
+    detalle_ninos_str = `Cantidad: ${inputsEdades.length}. Edades: ${arregloEdades.join(', ')}`;
+  }
 
   const registro = {
     nombre_completo: nombre,
@@ -173,7 +222,7 @@ $('f').onsubmit = async e => {
     viene_acompanado: grupo,
     cantidad_adultos: grupo ? num('adultos', 30) : 0,
     necesita_cuidado_ninos: ninos,
-    detalle_ninos: ninos ? `Cantidad: ${Math.max(1, num('cant', 30))}. Edades: ${$('edades').value.trim()}` : null
+    detalle_ninos: detalle_ninos_str
   };
 
   $('send').disabled = true; 
