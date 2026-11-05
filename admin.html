@@ -47,6 +47,7 @@ a{color:var(--od)}
 .leg{font-size:.75rem;color:#555;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
 .it{border:1px solid var(--bd);border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:.88rem}.it small{display:block;color:#666}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--tx);color:#fff;padding:10px 18px;border-radius:10px;z-index:40;font-size:.9rem}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rj);margin-left:4px;vertical-align:middle}.ev .dot{background:#fff}
 </style>
 </head>
 <body>
@@ -84,6 +85,11 @@ a{color:var(--od)}
         <div class="leg"><span>■ <b style="color:var(--ol)">Verde:</b> días de conferencia (20 al 22)</span><span><span class="chip no">3 pend.</span> tareas con faltantes</span><span><span class="chip">✓</span> todo cubierto</span></div>
       </div>
       <div class="card" id="dayp"></div>
+    </div>
+    <div class="card"><h2>Crear actividad en el calendario</h2>
+      <form id="af"><div class="tools"><input id="at" placeholder="Título (Ej. Reunión de coordinación)" required maxlength="120" style="flex:2 1 260px"><input type="date" id="ad" required aria-label="Fecha"><input type="time" id="ah1" aria-label="Hora de inicio"><input type="time" id="ah2" aria-label="Hora de fin"></div>
+        <input id="adt" placeholder="Detalle o lugar (opcional)" maxlength="300" style="margin-bottom:10px"><button>Agregar al calendario</button></form>
+      <div class="wrap" style="margin-top:14px"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Actividad</th><th>Detalle</th><th></th></tr></thead><tbody id="tac"></tbody></table></div>
     </div>
   </section>
 
@@ -133,7 +139,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const pad = n => String(n).padStart(2, '0');
 const wa = n => `<a href="https://wa.me/${String(n).replace(/\D/g, '')}" target="_blank" rel="noopener">${esc(n)}</a>`;
 function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 3500); }
-let D = {ins: [], t: [], i: [], a: [], v: [], by: {}}, ST = {}, view = [], selDay = 20;
+let D = {ins: [], t: [], i: [], a: [], v: [], ac: [], by: {}}, ST = {}, view = [], selDay = 20;
 
 // ---- acceso
 function showLogin(m) { $('app').hidden = true; $('out').hidden = true; $('who').textContent = ''; $('login').hidden = false; $('lm').textContent = m || ''; }
@@ -163,16 +169,22 @@ async function q(t, sel, ord) {
   ST[t] = r.error ? r.error.message : r.data.length; return r.data || [];
 }
 async function loadAll() {
-  [D.ins, D.t, D.i, D.a, D.v] = await Promise.all([q(CFG.TABLA, '*', 'created_at'), q('tareas', '*', 'id'), q('insumos', '*', 'id'), q('inscripciones_tarea', 'tarea_id, voluntarios(id,nombre,whatsapp,edad)', null), q('voluntarios', '*', 'created_at')]);
+  [D.ins, D.t, D.i, D.a, D.v, D.ac] = await Promise.all([q(CFG.TABLA, '*', 'created_at'), q('tareas', '*', 'id'), q('insumos', '*', 'id'), q('inscripciones_tarea', 'tarea_id, voluntarios(id,nombre,whatsapp,edad)', null), q('voluntarios', '*', 'created_at'), q('actividades', '*', 'fecha')]);
   D.ins = D.ins.map(norm); D.by = {}; D.a.forEach(x => x.voluntarios && (D.by[x.tarea_id] = D.by[x.tarea_id] || []).push(x.voluntarios));
   const igs = [...new Set(D.ins.map(r => r.iglesia))].sort(), fe = [...new Set(D.t.map(t => t.equipo))];
   $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
   $('fEq').innerHTML = '<option value="">Todos los equipos</option>' + fe.map(i => `<option>${esc(i)}</option>`).join('');
+  if (!$('ad').value) $('ad').value = K(selDay);
   render();
 }
 const vols = t => D.by[t.id] || [], ilim = t => t.necesarios >= 50, cubierta = t => ilim(t) ? vols(t).length > 0 : vols(t).length >= t.necesarios;
 const falta = t => ilim(t) ? (vols(t).length ? 0 : 1) : Math.max(0, t.necesarios - vols(t).length);
 const byOrden = (a, b) => a.orden.localeCompare(b.orden) || a.id - b.id;
+const K = d => `${CFG.ANIO}-${pad(CFG.MES)}-${pad(d)}`;
+const hh = a => a.hora_inicio ? a.hora_inicio.slice(0, 5) + (a.hora_fin ? ' a ' + a.hora_fin.slice(0, 5) : '') + ' hs' : 'Todo el día';
+const byHora = (a, b) => a.fecha.localeCompare(b.fecha) || (a.hora_inicio || '').localeCompare(b.hora_inicio || '');
+const acDe = d => D.ac.filter(a => a.fecha === K(d)).sort(byHora);
+const delBtn = id => `<button class="w" data-del="${esc(id)}" style="padding:2px 10px;font-size:.75rem">Borrar</button>`;
 function dias(t) {
   const m = /(\d\d)\/(\d\d)\s*-\s*(\d\d)\/(\d\d)/.exec(t.fecha_texto), y = t.orden.slice(0, 4);
   if (!m || m[2] !== m[4]) return [t.orden.slice(0, 10)];
@@ -181,7 +193,7 @@ function dias(t) {
 
 // ---- vistas
 function bars(el, e) { const max = Math.max(1, ...e.map(x => x[1])); el.innerHTML = e.length ? e.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p class="st">Todavía no hay datos.</p>'; }
-function render() { vRes(); vAgenda(); vIns(); vVol(); }
+function render() { vRes(); vAgenda(); vAc(); vIns(); vVol(); }
 function vRes() {
   const R = D.ins, ad = R.reduce((a, r) => a + r.ad, 0), ni = R.reduce((a, r) => a + r.kids, 0), igs = {};
   R.forEach(r => { const k = r.iglesia.toLowerCase(); (igs[k] = igs[k] || [r.iglesia, 0])[1]++; });
@@ -200,15 +212,19 @@ function vAgenda() {
   for (let d = 1; d <= n; d++) {
     const ts = map[`${CFG.ANIO}-${pad(CFG.MES)}-${pad(d)}`] || [], p = ts.filter(t => !cubierta(t)).length, ev = d >= 20 && d <= 22;
     const isH = hoy.getFullYear() === CFG.ANIO && hoy.getMonth() + 1 === CFG.MES && hoy.getDate() === d;
-    h += `<button class="d${ev ? ' ev' : ''}${isH ? ' hoy' : ''}${d === selDay ? ' sel' : ''}" data-d="${d}" aria-label="Día ${d}"><span>${d}</span>${ts.length ? `<span class="b${p ? '' : ' ok'}">${p ? p + ' pend.' : '✓'}</span>` : '<span></span>'}</button>`;
+    h += `<button class="d${ev ? ' ev' : ''}${isH ? ' hoy' : ''}${d === selDay ? ' sel' : ''}" data-d="${d}" aria-label="Día ${d}"><span>${d}${acDe(d).length ? '<i class="dot"></i>' : ''}</span>${ts.length ? `<span class="b${p ? '' : ' ok'}">${p ? p + ' pend.' : '✓'}</span>` : '<span></span>'}</button>`;
   }
   $('cal').innerHTML = h;
   const k = `${CFG.ANIO}-${pad(CFG.MES)}-${pad(selDay)}`, ts = (map[k] || []).sort(byOrden), pls = Object.keys(PLEN).filter(id => PDIA[id] === selDay);
   const wd = new Date(CFG.ANIO, CFG.MES - 1, selDay).toLocaleDateString('es', {weekday: 'long'});
   $('dayp').innerHTML = `<h2 style="text-transform:capitalize">${wd} ${selDay} de noviembre</h2>` +
     (pls.length ? '<p class="st" style="margin:0 0 6px"><b>Reuniones de la conferencia</b></p>' + pls.map(id => `<div class="it"><b>${PHORA[id]} hs</b> · ${esc(PLEN[id].split('· ')[1])}<small>${D.ins.filter(r => r.pl.includes(id)).length} inscriptos</small></div>`).join('') : '') +
+    (acDe(selDay).length ? '<p class="st" style="margin:10px 0 6px"><b>Actividades</b></p>' + acDe(selDay).map(a => `<div class="it" style="border-left:4px solid var(--rj)"><b>${esc(a.titulo)}</b> <span class="chip">${hh(a)}</span>${a.detalle ? `<small>${esc(a.detalle)}</small>` : ''}<div style="margin-top:4px">${delBtn(a.id)}</div></div>`).join('') : '') +
     '<p class="st" style="margin:10px 0 6px"><b>Tareas de voluntarios</b></p>' +
     (ts.map(t => `<div class="it"><b>${esc(t.titulo)}</b> <span class="chip${cubierta(t) ? '' : ' no'}">${cubierta(t) ? 'Cubierta' : ilim(t) ? 'Nadie anotado' : 'Faltan ' + falta(t)}</span><small>${esc(t.equipo)} · ${esc(t.fecha_texto)}</small><small>${vols(t).map(v => esc(v.nombre)).join(', ') || 'Sin responsables'}</small></div>`).join('') || '<p class="st">Sin tareas este día.</p>');
+}
+function vAc() {
+  $('tac').innerHTML = [...D.ac].sort(byHora).map(a => `<tr><td>${a.fecha.slice(8, 10)}/${a.fecha.slice(5, 7)}</td><td>${hh(a)}</td><td><b>${esc(a.titulo)}</b></td><td>${esc(a.detalle || '')}</td><td>${delBtn(a.id)}</td></tr>`).join('') || '<tr><td colspan="5">Todavía no creaste actividades.</td></tr>';
 }
 function filtrar() { const s = $('q').value.toLowerCase(), fi = $('fi').value, fr = $('fr').value; return D.ins.filter(r => (!s || (r.nombre + r.email + r.wa + r.iglesia).toLowerCase().includes(s)) && (!fi || r.iglesia === fi) && (!fr || String(+r.reg) === fr)); }
 function vIns() {
@@ -227,7 +243,7 @@ function vVol() {
 
 // ---- eventos
 $('tabs').onclick = e => { const t = e.target.dataset.t; if (!t) return; document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === t)); document.querySelectorAll('[data-p]').forEach(s => s.hidden = s.dataset.p !== t); };
-$('cal').onclick = e => { const b = e.target.closest('[data-d]'); if (b) { selDay = +b.dataset.d; vAgenda(); } };
+$('cal').onclick = e => { const b = e.target.closest('[data-d]'); if (b) { selDay = +b.dataset.d; $('ad').value = K(selDay); vAgenda(); } };
 ['q', 'fi', 'fr'].forEach(id => $(id).oninput = vIns); ['fEq', 'vAll'].forEach(id => $(id).onchange = vVol);
 $('rf').onclick = () => { loadAll(); toast('Datos actualizados.'); };
 $('tb').onchange = async e => {
@@ -245,6 +261,20 @@ $('cp').onclick = () => copiar(view.map(r => r.email).join(', '), `Copiados ${vi
 $('csv').onclick = () => csv('inscriptos-conferencia.csv', ['Nombre', 'Correo', 'WhatsApp', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Niños', 'Detalle niños', 'Fecha', 'Regalo enviado'], view.map(r => [r.nombre, r.email, r.wa, r.iglesia, r.pl.map(p => PLEN[p] || p).join(' | '), r.ad, r.kids, r.det, r.f, r.reg ? 'Sí' : 'No']));
 $('csvV').onclick = () => csv('voluntarios.csv', ['Nombre', 'Edad', 'WhatsApp', 'Tareas', 'Registro'], D.v.map(v => [v.nombre, v.edad, v.whatsapp, D.a.filter(x => x.voluntarios && x.voluntarios.id === v.id).length, v.created_at]));
 
+$('af').onsubmit = async e => {
+  e.preventDefault();
+  const row = {titulo: $('at').value.trim(), fecha: $('ad').value, hora_inicio: $('ah1').value || null, hora_fin: $('ah2').value || null, detalle: $('adt').value.trim() || null};
+  if (row.titulo.length < 2 || !row.fecha) return toast('Completa el título y la fecha.');
+  const {error} = await sb.from('actividades').insert(row);
+  if (error) return toast('No se pudo guardar: ' + error.message + ' (¿ya ejecutaste actividades.sql?)');
+  e.target.reset(); $('ad').value = row.fecha; toast('Actividad agregada al calendario.'); loadAll();
+};
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-del]'); if (!b || !confirm('¿Borrar esta actividad del calendario?')) return;
+  const {error} = await sb.from('actividades').delete().eq('id', b.dataset.del);
+  if (error) return toast('No se pudo borrar: ' + error.message);
+  toast('Actividad borrada.'); loadAll();
+});
 const TPL = {
   rec: ['Te esperamos: Conferencia Instrumentos en las Manos del Redentor', 'Hola,\n\nTe recordamos que la conferencia con Lois Kehlenbrink (Paul Tripp Ministries) es del 20 al 22 de noviembre en el Auditorio de la Iglesia Evangelio & Vida.\n\nViernes 20/11: 19:00 hs\nSábado 21/11: desde las 16:30 hs\nDomingo 22/11: desde las 09:30 hs\n\nUbicación: https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8\n\nTe esperamos con mucha alegría.\nIglesia Evangelio & Vida'],
   reg: ['Tu regalo de bienvenida para la conferencia', 'Hola,\n\nGracias por inscribirte a la conferencia Instrumentos en las Manos del Redentor. Aquí está tu regalo de bienvenida:\n\n' + (CFG.GIFT_URL || '[pegar aquí el enlace del regalo]') + '\n\nNos vemos del 20 al 22 de noviembre.\nIglesia Evangelio & Vida']
