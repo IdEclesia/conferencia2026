@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Administración · Conferencia</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ol:#6C7939;--mt:#F0F3E8;--rj:#A8222B;--tx:#1A1A1A;--bd:#cfd6bb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--mt);color:var(--tx);font:15px/1.5 Poppins,system-ui,sans-serif}
+header{background:var(--ol);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.1rem;font-weight:800}
+main{max-width:1100px;margin:0 auto;padding:18px 14px 60px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+h2{margin:0 0 12px;font-size:1.05rem;font-weight:800;color:var(--ol)}
+input,select,textarea,button{font:inherit}
+input,select,textarea{padding:9px 11px;border:1.5px solid var(--bd);border-radius:9px;background:#fff;width:100%}
+button{padding:9px 14px;border:0;border-radius:9px;background:var(--ol);color:#fff;font-weight:600;cursor:pointer}
+button.r{background:var(--rj)}button.w{background:#fff;color:var(--ol);border:1.5px solid var(--ol)}
+:focus-visible{outline:3px solid #6C793955}
+#login{max-width:360px;margin:60px auto}#login input{margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px}
+.kpi b{display:block;font-size:2rem;font-weight:800;color:var(--ol);line-height:1.1}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.bar{display:grid;grid-template-columns:minmax(90px,38%) 1fr 34px;gap:8px;align-items:center;margin:6px 0;font-size:.85rem}
+.bar i{display:block;height:14px;border-radius:7px;background:var(--ol);min-width:3px}
+.bar span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tools>*{flex:1;min-width:140px}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{background:var(--mt);position:sticky;top:0}
+.tag{display:inline-block;background:var(--mt);border-radius:6px;padding:0 6px;margin:1px;font-size:.75rem}
+.msg{min-height:1.3em;color:var(--rj);font-weight:600;margin:6px 0 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Conferencia · Inscripciones</h1><button class="w" id="out" hidden>Cerrar sesión</button></header>
+
+<form id="login" class="card">
+  <h2>Ingreso de administradores</h2>
+  <input type="email" id="le" placeholder="Correo" autocomplete="username" required>
+  <input type="password" id="lp" placeholder="Contraseña" autocomplete="current-password" required>
+  <button style="width:100%">Ingresar</button>
+  <p class="msg" id="lm"></p>
+</form>
+
+<main id="app" hidden>
+  <div class="kpis" id="kpis"></div>
+  <div class="cols">
+    <div class="card"><h2>Asistencia por reunión</h2><div id="bPl"></div></div>
+    <div class="card"><h2>Inscriptos por iglesia</h2><div id="bIg"></div></div>
+    <div class="card"><h2>Inscripciones por día</h2><div id="bDia"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Inscriptos</h2>
+    <div class="tools">
+      <input id="q" placeholder="Buscar por nombre, correo o iglesia">
+      <select id="fi"></select>
+      <select id="fr"><option value="">Regalo: todos</option><option value="0">Regalo sin enviar</option><option value="1">Regalo enviado</option></select>
+    </div>
+    <div class="tools">
+      <button class="w" id="csv">Exportar CSV</button>
+      <button class="w" id="cp">Copiar correos</button>
+      <button id="rf">Actualizar</button>
+    </div>
+    <div class="wrap"><table>
+      <thead><tr><th>Nombre</th><th>Correo</th><th>Iglesia</th><th>Reuniones</th><th>Adultos +</th><th>Niños</th><th>Fecha</th><th>Regalo enviado</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table></div>
+    <p class="msg" id="tm"></p>
+  </div>
+
+  <div class="card">
+    <h2>Escribir a los inscriptos</h2>
+    <p style="margin-top:0">Se enviará a las <b id="nDest">0</b> personas que muestra la lista de arriba (respeta los filtros).</p>
+    <div class="tools">
+      <button class="w" data-t="rec">Plantilla: recordatorio</button>
+      <button class="w" data-t="reg">Plantilla: regalo</button>
+    </div>
+    <input id="asu" placeholder="Asunto" style="margin-bottom:8px">
+    <textarea id="cuerpo" rows="7" placeholder="Mensaje"></textarea>
+    <div class="tools" style="margin-top:10px">
+      <button class="r" id="mail">Abrir en mi correo (con copia oculta)</button>
+      <button class="w" id="cpm">Copiar asunto y mensaje</button>
+    </div>
+  </div>
+</main>
+
+<script>
+// ====== CONFIGURACIÓN (misma que el formulario) ======
+const CFG = { URL: 'https://TU-PROYECTO.supabase.co', KEY: 'TU_ANON_PUBLIC_KEY', GIFT_URL: '' };
+const PLEN = {p1:'Vie 20/11 · Plenaria 1',p2:'Sáb 21/11 · Plenaria 2',p3:'Sáb 21/11 · Plenaria 3',p4:'Sáb 21/11 · Plenaria 4',p5:'Dom 22/11 · Plenaria 5',p6:'Dom 22/11 · Culto General'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token = sessionStorage.getItem('tk'), rows = [], view = [];
+
+async function api(path, opt = {}) {
+  const r = await fetch(CFG.URL + path, {...opt, headers: {apikey: CFG.KEY, Authorization: 'Bearer ' + (token || CFG.KEY), 'Content-Type': 'application/json', ...(opt.headers || {})}});
+  if (r.status === 401) { logout(); throw new Error('Tu sesión venció. Ingresa de nuevo.'); }
+  return r;
+}
+function logout() { token = null; sessionStorage.removeItem('tk'); $('app').hidden = true; $('out').hidden = true; $('login').hidden = false; }
+
+$('login').onsubmit = async e => {
+  e.preventDefault(); $('lm').textContent = '';
+  try {
+    const r = await fetch(CFG.URL + '/auth/v1/token?grant_type=password', {method: 'POST', headers: {apikey: CFG.KEY, 'Content-Type': 'application/json'}, body: JSON.stringify({email: $('le').value.trim(), password: $('lp').value})});
+    const d = await r.json();
+    if (!r.ok) throw new Error('Correo o contraseña incorrectos.');
+    token = d.access_token; sessionStorage.setItem('tk', token); $('lp').value = ''; load();
+  } catch (x) { $('lm').textContent = x.message; }
+};
+$('out').onclick = logout;
+
+async function load() {
+  try {
+    const r = await api('/rest/v1/inscripciones?select=*&order=created_at.desc');
+    if (!r.ok) throw new Error('No se pudieron cargar los datos.');
+    rows = await r.json();
+    $('login').hidden = true; $('app').hidden = false; $('out').hidden = false;
+    const igs = [...new Set(rows.map(r => r.iglesia.trim()))].sort();
+    $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
+    stats(); draw();
+  } catch (x) { $('lm').textContent = x.message; $('login').hidden = false; }
+}
+
+function bars(el, entries) {
+  const max = Math.max(1, ...entries.map(e => e[1]));
+  el.innerHTML = entries.length ? entries.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p>Todavía no hay datos.</p>';
+}
+function stats() {
+  const adultos = rows.reduce((a, r) => a + r.adultos_acomp, 0), ninos = rows.reduce((a, r) => a + r.cant_ninos, 0);
+  const igs = {}; rows.forEach(r => { const k = r.iglesia.trim(); igs[k.toLowerCase()] = igs[k.toLowerCase()] || [k, 0]; igs[k.toLowerCase()][1]++; });
+  const k = [[rows.length, 'inscriptos'], [rows.length + adultos + ninos, 'personas en total'], [adultos, 'acompañantes adultos'], [ninos, 'niños'], [Object.keys(igs).length, 'iglesias']];
+  $('kpis').innerHTML = k.map(([n, t]) => `<div class="kpi"><b>${n}</b>${t}</div>`).join('');
+  bars($('bPl'), Object.entries(PLEN).map(([id, t]) => [t, rows.filter(r => r.plenarias.includes(id)).length]));
+  bars($('bIg'), Object.values(igs).sort((a, b) => b[1] - a[1]).slice(0, 12));
+  const dias = {}; [...rows].reverse().forEach(r => { const d = new Date(r.created_at).toLocaleDateString('es', {day: '2-digit', month: 'short'}); dias[d] = (dias[d] || 0) + 1; });
+  bars($('bDia'), Object.entries(dias));
+}
+function filtrar() {
+  const q = $('q').value.toLowerCase(), fi = $('fi').value, fr = $('fr').value;
+  return rows.filter(r => (!q || (r.nombre + r.email + r.iglesia).toLowerCase().includes(q)) && (!fi || r.iglesia.trim() === fi) && (!fr || String(+r.regalo_enviado) === fr));
+}
+function draw() {
+  view = filtrar(); $('nDest').textContent = view.length;
+  $('tb').innerHTML = view.map(r => `<tr><td>${esc(r.nombre)}</td><td>${esc(r.email)}</td><td>${esc(r.iglesia)}</td>
+    <td>${r.plenarias.map(p => `<span class="tag">${esc((PLEN[p] || p).replace(' · ', ' '))}</span>`).join('')}</td>
+    <td>${r.adultos_acomp}</td><td>${r.cant_ninos ? r.cant_ninos + ' (' + esc(r.edades_ninos) + ')' : '—'}</td>
+    <td>${new Date(r.created_at).toLocaleDateString('es')}</td>
+    <td><input type="checkbox" data-id="${esc(r.id)}" ${r.regalo_enviado ? 'checked' : ''} style="width:auto" aria-label="Regalo enviado a ${esc(r.nombre)}"></td></tr>`).join('') || '<tr><td colspan="8">Sin resultados.</td></tr>';
+}
+['q', 'fi', 'fr'].forEach(id => $(id).oninput = draw);
+$('rf').onclick = load;
+$('tb').onchange = async e => {
+  const c = e.target; if (!c.dataset.id) return;
+  const r = await api('/rest/v1/inscripciones?id=eq.' + encodeURIComponent(c.dataset.id), {method: 'PATCH', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({regalo_enviado: c.checked})});
+  if (!r.ok) { c.checked = !c.checked; $('tm').textContent = 'No se pudo guardar el cambio.'; return; }
+  rows.find(x => x.id === c.dataset.id).regalo_enviado = c.checked; $('tm').textContent = '';
+};
+
+const copiar = async (t, msg) => { try { await navigator.clipboard.writeText(t); $('tm').textContent = msg; } catch { $('tm').textContent = 'No se pudo copiar. Selecciona el texto a mano.'; } };
+$('cp').onclick = () => copiar(view.map(r => r.email).join(', '), `Copiados ${view.length} correos.`);
+$('csv').onclick = () => {
+  const h = ['Nombre', 'Correo', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Niños', 'Edades niños', 'Fecha', 'Regalo enviado'];
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const l = view.map(r => [r.nombre, r.email, r.iglesia, r.plenarias.map(p => PLEN[p] || p).join(' | '), r.adultos_acomp, r.cant_ninos, r.edades_ninos, r.created_at, r.regalo_enviado ? 'Sí' : 'No'].map(q).join(','));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + [h.map(q).join(','), ...l].join('\n')], {type: 'text/csv'}));
+  a.download = 'inscriptos-conferencia.csv'; a.click();
+};
+
+const TPL = {
+  rec: ['Te esperamos: Conferencia Instrumentos en las Manos del Redentor', 'Hola,\n\nTe recordamos que la conferencia con Lois Kehlenbrink (Paul Tripp Ministries) es del 20 al 22 de noviembre en el Auditorio de la Iglesia Evangelio & Vida.\n\nViernes 20/11: 19:00 hs\nSábado 21/11: desde las 16:30 hs\nDomingo 22/11: desde las 09:30 hs\n\nUbicación: https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8\n\nTe esperamos con mucha alegría.\nIglesia Evangelio & Vida'],
+  reg: ['Tu regalo de bienvenida para la conferencia', 'Hola,\n\nGracias por inscribirte a la conferencia Instrumentos en las Manos del Redentor. Aquí está tu regalo de bienvenida:\n\n' + (CFG.GIFT_URL || '[pegar aquí el enlace del regalo]') + '\n\nNos vemos del 20 al 22 de noviembre.\nIglesia Evangelio & Vida']
+};
+document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { [$('asu').value, $('cuerpo').value] = TPL[b.dataset.t]; });
+$('mail').onclick = () => {
+  const bcc = view.map(r => r.email).join(',');
+  if (!bcc) return ($('tm').textContent = 'No hay destinatarios con los filtros actuales.');
+  location.href = 'mailto:?bcc=' + encodeURIComponent(bcc) + '&subject=' + encodeURIComponent($('asu').value) + '&body=' + encodeURIComponent($('cuerpo').value);
+};
+$('cpm').onclick = () => copiar($('asu').value + '\n\n' + $('cuerpo').value, 'Asunto y mensaje copiados.');
+
+if (token) load();
+</script>
+</body>
+</html>

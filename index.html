@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inscripción · Instrumentos en las Manos del Redentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ol:#6C7939;--mt:#F0F3E8;--rj:#A8222B;--tx:#1A1A1A;--bd:#cfd6bb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--mt);color:var(--tx);font:16px/1.55 Poppins,system-ui,-apple-system,Segoe UI,sans-serif}
+.top{background:#fff;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.top img{height:44px;display:block;margin:0 auto}
+main{max-width:620px;margin:0 auto;padding:20px 16px 56px}
+.flyer{width:100%;border-radius:14px;display:block}
+h1{font-weight:800;font-size:clamp(1.9rem,8vw,2.7rem);line-height:1.05;letter-spacing:-.02em;color:var(--ol);margin:28px 0 12px}
+.lead{margin:0 0 8px}
+.lugar{margin:0 0 20px;font-weight:500}
+form,.ok{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:22px 18px}
+fieldset{border:0;padding:0;margin:0 0 26px}
+legend{font-weight:800;font-size:1.15rem;color:var(--ol);padding:0;margin-bottom:12px}
+label.f{display:block;font-weight:600;margin:14px 0 4px}
+.hint{display:block;font-weight:400;font-size:.85rem;color:#555;margin-top:2px}
+input[type=text],input[type=email],input[type=number],select,textarea{width:100%;font:inherit;padding:11px 12px;border:1.5px solid var(--bd);border-radius:10px;background:#fff;color:var(--tx)}
+textarea{min-height:76px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:3px solid #6C793955;border-color:var(--ol)}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1.5px solid var(--bd);border-radius:10px;margin-bottom:8px;cursor:pointer}
+.chk:has(input:checked){border-color:var(--ol);background:var(--mt)}
+.chk input{margin-top:5px;accent-color:var(--ol);width:18px;height:18px;flex:none}
+.chk small{display:block;color:#555}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row .chk{flex:1;min-width:120px}
+.sub{margin-top:6px;padding:4px 0 0 12px;border-left:4px solid var(--ol)}
+[hidden]{display:none!important}
+button.go,.btn{display:block;width:100%;text-align:center;text-decoration:none;font:inherit;font-weight:600;padding:14px;border:0;border-radius:10px;background:var(--rj);color:#fff;cursor:pointer;margin-top:8px}
+.btn.sec{background:#fff;color:var(--ol);border:2px solid var(--ol)}
+button[disabled]{opacity:.6;cursor:wait}
+.err{color:var(--rj);font-weight:600;margin:12px 0 0}
+.ok h2{font-weight:800;color:var(--ol);margin:0 0 8px;font-size:1.6rem}
+.ok .datos{background:var(--mt);border-radius:10px;padding:12px 14px;margin:14px 0}
+.hp{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<div class="top"><img src="assets/logo.png" alt="Iglesia Evangelio &amp; Vida"></div>
+<main>
+  <img class="flyer" src="assets/flyer.jpg" alt="Conferencia Instrumentos en las Manos del Redentor, con Lois Kehlenbrink. Del 20 al 22 de noviembre">
+  <h1>Conferencia: Instrumentos en las Manos del Redentor</h1>
+  <p class="lead">¡Te damos la bienvenida! Acompáñanos del 20 al 22 de noviembre a vivir un tiempo de transformación junto a la conferencista Lois Kehlenbrink (Paul Tripp Ministries).</p>
+  <p class="lugar">📍 Auditorio Iglesia Evangelio &amp; Vida</p>
+  <p>Completa este breve formulario para reservar tu lugar y ayudarnos a preparar la mejor experiencia para ti y tu familia.</p>
+
+  <form id="f" novalidate>
+    <fieldset>
+      <legend>Tus datos</legend>
+      <label class="f" for="nombre">Nombre y apellido</label>
+      <input type="text" id="nombre" autocomplete="name" required>
+      <label class="f" for="email">Correo electrónico<span class="hint">Aquí te enviaremos el recordatorio del evento y tu regalo de bienvenida.</span></label>
+      <input type="email" id="email" autocomplete="email" required>
+      <label class="f" for="ig">Iglesia a la que perteneces<span class="hint">Escribe el nombre de tu iglesia. Ej: Iglesia Evangelio &amp; Vida</span></label>
+      <input type="text" id="ig" autocomplete="organization" maxlength="120" required>
+    </fieldset>
+
+    <fieldset>
+      <legend>¿A qué reuniones asistirás?</legend>
+      <div id="pl"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Acompañantes y niños</legend>
+      <label class="f" for="acomp">¿Vienes acompañado/a?</label>
+      <select id="acomp">
+        <option value="no">Vengo solo/a</option>
+        <option value="si">Vengo en grupo / familia</option>
+      </select>
+      <div id="grupo" class="sub" hidden>
+        <label class="f" for="adultos">Cantidad de acompañantes adultos<span class="hint">Sin contarte a ti.</span></label>
+        <input type="number" id="adultos" min="0" max="30" value="0" inputmode="numeric">
+        <label class="f">¿Traerás niños?</label>
+        <div class="row">
+          <label class="chk"><input type="radio" name="ninos" value="si"> Sí</label>
+          <label class="chk"><input type="radio" name="ninos" value="no" checked> No</label>
+        </div>
+        <div id="ninosBox" hidden>
+          <label class="f" for="cant">¿Cuántos niños asistirán?</label>
+          <input type="number" id="cant" min="1" max="30" value="1" inputmode="numeric">
+          <label class="f" for="edades">¿Qué edades tienen?<span class="hint">Ej: 2 niños (4 años y 8 años)</span></label>
+          <textarea id="edades" maxlength="300"></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <input class="hp" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="go" id="send" type="submit">Reservar mi lugar</button>
+    <p class="err" id="err" role="alert" hidden></p>
+  </form>
+
+  <section class="ok" id="ok" hidden>
+    <h2>¡Inscripción confirmada! 🎉</h2>
+    <p>Gracias por registrarte a la Conferencia <b>Instrumentos en las Manos del Redentor</b>.</p>
+    <div class="datos">📍 <b>Dirección:</b> Auditorio Iglesia Evangelio &amp; Vida<br>📅 <b>Fecha:</b> 20 al 22 de noviembre</div>
+    <p id="regalo">🎁 <b>Tu regalo de bienvenida</b> llegará a tu correo.</p>
+    <a class="btn" id="giftBtn" hidden>Descargar mi regalo</a>
+    <a class="btn sec" id="mapBtn" target="_blank" rel="noopener">Cómo llegar (Google Maps)</a>
+    <a class="btn sec" id="igBtn" target="_blank" rel="noopener">Seguinos en Instagram</a>
+    <p>Te esperamos con mucha alegría. ¡Nos vemos pronto!</p>
+  </section>
+</main>
+
+<script>
+// ====== CONFIGURACIÓN: completar con los datos de tu proyecto Supabase ======
+const CFG = {
+  URL: 'https://TU-PROYECTO.supabase.co',
+  KEY: 'TU_ANON_PUBLIC_KEY',
+  GIFT_URL: '', // link al regalo (PDF). Si queda vacío, se avisa que llegará por correo.
+  MAPS: 'https://maps.app.goo.gl/TbdHcxMpxpFsGVjX8',
+  IG: 'https://www.instagram.com/iglesiaevangelioyvida/'
+};
+const PLEN = [
+  ['p1','Viernes 20/11: Plenaria 1','19:00 a 21:00 hs'],
+  ['p2','Sábado 21/11: Plenaria 2','16:30 a 17:30 hs'],
+  ['p3','Sábado 21/11: Plenaria 3','17:30 a 19:00 hs'],
+  ['p4','Sábado 21/11: Plenaria 4','19:30 a 21:30 hs'],
+  ['p5','Domingo 22/11: Plenaria 5','09:30 a 11:00 hs'],
+  ['p6','Domingo 22/11: Culto General','11:00 a 12:00 hs']
+];
+const $ = id => document.getElementById(id);
+$('pl').innerHTML = PLEN.map(([k,t,h]) => `<label class="chk"><input type="checkbox" name="pl" value="${k}"><span>${t}<small>${h}</small></span></label>`).join('');
+$('mapBtn').href = CFG.MAPS; $('igBtn').href = CFG.IG;
+
+$('acomp').onchange = () => { $('grupo').hidden = $('acomp').value !== 'si'; };
+document.querySelectorAll('[name=ninos]').forEach(r => r.onchange = () => {
+  $('ninosBox').hidden = document.querySelector('[name=ninos]:checked').value !== 'si';
+});
+
+const showErr = m => { $('err').textContent = m; $('err').hidden = !m; };
+const num = (id, max) => Math.max(0, Math.min(max, parseInt($(id).value, 10) || 0));
+
+$('f').onsubmit = async e => {
+  e.preventDefault(); showErr('');
+  if ($('web').value) return; // anti-spam
+  const nombre = $('nombre').value.trim(), email = $('email').value.trim().toLowerCase();
+  const iglesia = $('ig').value.trim();
+  const plenarias = [...document.querySelectorAll('[name=pl]:checked')].map(c => c.value);
+  if (nombre.length < 2) return showErr('Escribe tu nombre y apellido.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showErr('Revisa tu correo: parece incompleto.');
+  if (iglesia.length < 2) return showErr('Indica a qué iglesia perteneces.');
+  if (!plenarias.length) return showErr('Marca al menos una reunión a la que asistirás.');
+  const grupo = $('acomp').value === 'si';
+  const ninos = grupo && document.querySelector('[name=ninos]:checked').value === 'si';
+  if (ninos && !$('edades').value.trim()) return showErr('Cuéntanos las edades de los niños.');
+  const body = {
+    nombre, email, iglesia, plenarias,
+    viene_acompanado: grupo,
+    adultos_acomp: grupo ? num('adultos', 30) : 0,
+    trae_ninos: ninos,
+    cant_ninos: ninos ? Math.max(1, num('cant', 30)) : 0,
+    edades_ninos: ninos ? $('edades').value.trim() : null
+  };
+  $('send').disabled = true; $('send').textContent = 'Enviando…';
+  try {
+    const r = await fetch(CFG.URL + '/rest/v1/inscripciones', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', apikey: CFG.KEY, Authorization: 'Bearer ' + CFG.KEY, Prefer: 'return=minimal'},
+      body: JSON.stringify(body)
+    });
+    if (r.status === 409) throw new Error('Este correo ya está inscripto. Si necesitas cambiar algo, escríbenos por Instagram.');
+    if (!r.ok) throw new Error('No pudimos guardar tu inscripción. Intenta de nuevo en un momento.');
+    $('f').hidden = true; $('ok').hidden = false;
+    if (CFG.GIFT_URL) { $('giftBtn').href = CFG.GIFT_URL; $('giftBtn').hidden = false; $('regalo').innerHTML = '🎁 <b>Tu regalo de bienvenida</b> está listo:'; }
+    $('ok').scrollIntoView({behavior: 'smooth'});
+  } catch (x) {
+    showErr(x.message.startsWith('Failed') ? 'Sin conexión. Revisa tu internet e intenta de nuevo.' : x.message);
+    $('send').disabled = false; $('send').textContent = 'Reservar mi lugar';
+  }
+};
+</script>
+</body>
+</html>
