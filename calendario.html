@@ -31,7 +31,7 @@ button.r{background:var(--rj)}button.s{padding:5px 10px;font-size:.8rem}
 .bar{height:12px;background:#e8ebe0;border-radius:6px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ol);transition:width .8s}
 .em{background:#A8222B14;border-color:#A8222B55}.em h2{color:var(--rj)}
 .em .it{background:#fff;border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.9rem}
-.tabs{display:flex;gap:6px;border-bottom:1px solid var(--bd);margin-bottom:14px;overflow-x:auto}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--bd);margin-bottom:14px}
 .tabs button{background:none;color:#666;border-radius:10px 10px 0 0;white-space:nowrap}.tabs button[aria-selected=true]{background:#fff;color:var(--ol);box-shadow:0 -1px 0 var(--bd)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .eqb{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px;text-align:left;color:var(--tx);min-height:130px;display:flex;flex-direction:column;justify-content:space-between}
@@ -42,7 +42,7 @@ button.r{background:var(--rj)}button.s{padding:5px 10px;font-size:.8rem}
 .eq{color:var(--ol);font-weight:600;font-size:.85rem}.fe,.cu{font-size:.8rem;color:#666}.cu{color:var(--ol);font-weight:500}
 .tkr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
 .cnt{font-size:.8rem;font-weight:600;background:#f1f2ee;padding:3px 9px;border-radius:6px}.yo{font-size:.8rem;font-weight:600;color:var(--ol)}
-.dia{margin:18px 0 8px;font-weight:800;color:var(--ol);text-transform:capitalize}
+.dia{margin:18px 0 8px;font-weight:800;color:var(--ol)}.dia::first-letter{text-transform:uppercase}
 .ov{position:fixed;inset:0;background:#000a;z-index:20;display:flex;align-items:center;justify-content:center;padding:12px}
 .mo{background:var(--mt);width:100%;max-width:680px;max-height:92vh;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
 .mh{background:var(--ol);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}.mh h2{color:#fff;margin:0;font-size:1.15rem}
@@ -54,14 +54,17 @@ details{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10
 table{border-collapse:collapse;width:100%;font-size:.85rem}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd)}th{background:var(--mt)}
 .chip{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 8px;border-radius:6px;background:#6C793922;color:var(--od)}.chip.no{background:#A8222B1c;color:var(--rj)}
 .big{font-weight:800;font-size:clamp(1.6rem,5vw,2.2rem);line-height:1;margin:0 0 4px;letter-spacing:-.02em}.big span{display:block;color:var(--rj)}
-.agenda{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}@media(max-width:760px){.agenda{grid-template-columns:1fr}}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}.cal .h{font-size:.65rem;font-weight:800;color:var(--ol);text-align:center;letter-spacing:.06em}
-.cal button.d{min-height:56px;background:#fff;color:var(--tx);border:1.5px solid var(--bd);border-radius:10px;padding:4px 6px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;font-weight:600}
+.agenda{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}@media(max-width:760px){.agenda{grid-template-columns:minmax(0,1fr)}}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:12px}.cal .h{font-size:.65rem;font-weight:800;color:var(--ol);text-align:center;letter-spacing:.06em}
+.cal button.d{min-width:0;overflow:hidden;min-height:56px;background:#fff;color:var(--tx);border:1.5px solid var(--bd);border-radius:10px;padding:4px 6px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;font-weight:600}
 .cal button.d:hover{border-color:var(--ol);background:#fff}.cal .d.ev{background:var(--ol);color:#fff;border-color:var(--od)}.cal .d.hoy{box-shadow:0 0 0 3px var(--rj)}.cal .d.sel{outline:3px solid var(--tx);outline-offset:1px}
-.cal .b{font-size:.62rem;font-weight:800;border-radius:5px;padding:0 5px;background:#A8222B22;color:var(--rj)}.cal .b.ok{background:#6C793922;color:var(--od)}.cal .ev .b{background:#fff}
+.cal .b{white-space:nowrap;font-size:.62rem;font-weight:800;border-radius:5px;padding:0 5px;background:#A8222B22;color:var(--rj)}.cal .b.ok{background:#6C793922;color:var(--od)}.cal .ev .b{background:#fff}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rj);margin-left:4px;vertical-align:middle}.ev .dot{background:#fff}
 .leg{font-size:.75rem;color:#555;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
 .act{border-left:4px solid var(--rj);background:#fff;border:1px solid var(--bd);border-left:4px solid var(--rj);border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:.88rem}.act small{display:block;color:#666}
+@media(max-width:520px){.cal{gap:4px}.cal button.d{min-height:50px;padding:3px 4px;font-size:.9rem}.cal .b em{display:none}.tabs button{padding:8px 10px;font-size:.85rem}}
+.cal .b em{font-style:normal}
+#who{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -144,16 +147,16 @@ function agendaHTML() {
   let h = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'].map(d => `<div class="h">${d}</div>`).join('') + '<span></span>'.repeat(first);
   for (let d = 1; d <= n; d++) {
     const ts = map[K(d)] || [], p = ts.filter(t => !cubierta(t)).length, ev = d >= 20 && d <= 22, isH = hoy.getFullYear() === AN && hoy.getMonth() + 1 === MS && hoy.getDate() === d;
-    h += `<button class="d${ev ? ' ev' : ''}${isH ? ' hoy' : ''}${d === selDay ? ' sel' : ''}" data-a="dia" data-v="${d}" aria-label="Día ${d}"><span>${d}${acDe(d).length ? '<i class="dot"></i>' : ''}</span>${ts.length ? `<span class="b${p ? '' : ' ok'}">${p ? p + ' pend.' : '✓'}</span>` : '<span></span>'}</button>`;
+    h += `<button class="d${ev ? ' ev' : ''}${isH ? ' hoy' : ''}${d === selDay ? ' sel' : ''}" data-a="dia" data-v="${d}" aria-label="Día ${d}"><span>${d}${acDe(d).length ? '<i class="dot"></i>' : ''}</span>${ts.length ? `<span class="b${p ? '' : ' ok'}">${p ? p + '<em> pend.</em>' : '✓'}</span>` : '<span></span>'}</button>`;
   }
   const ts = (map[K(selDay)] || []).sort(byOrden), pls = PL.filter(x => x[1] === selDay), as = acDe(selDay);
   const wd = new Date(AN, MS - 1, selDay).toLocaleDateString('es', {weekday: 'long'});
-  const panel = `<h2 style="text-transform:capitalize">${wd} ${selDay} de noviembre</h2>` +
+  const panel = `<h2>${wd[0].toUpperCase() + wd.slice(1)} ${selDay} de noviembre</h2>` +
     (pls.length ? '<p class="fe" style="margin:0 0 6px"><b>Reuniones de la conferencia</b></p>' + pls.map(x => `<div class="act" style="border-left-color:var(--ol)"><b>${x[2]} hs</b> · ${x[3]}</div>`).join('') : '') +
     (as.length ? '<p class="fe" style="margin:10px 0 6px"><b>Actividades</b></p>' + as.map(a => `<div class="act"><b>${esc(a.titulo)}</b> <span class="chip">${hh(a)}</span>${a.detalle ? `<small>${esc(a.detalle)}</small>` : ''}</div>`).join('') : '') +
     '<p class="fe" style="margin:10px 0 6px"><b>Tareas de voluntarios</b></p>' + (ts.map(t => taskRow(t, true)).join('') || '<p class="fe">Sin tareas este día.</p>');
   return `<div class="agenda"><div class="card"><p class="big">NOVIEMBRE<span>EN AGENDA</span></p><p class="fe" style="margin:0">Toca un día para ver sus reuniones, actividades y tareas.</p><div class="cal">${h}</div>
-    <div class="leg"><span><b style="color:var(--ol)">■ Verde:</b> conferencia (20 al 22)</span><span><span class="chip no">3 pend.</span> faltan voluntarios</span><span><span class="chip">✓</span> todo cubierto</span><span><i class="dot" style="margin:0"></i> hay actividades</span></div></div><div class="card" style="margin:0">${panel}</div></div>`;
+    <div class="leg"><span><b style="color:var(--ol)">■ Verde:</b> conferencia (20 al 22)</span><span><span class="chip no">3</span> tareas pendientes</span><span><span class="chip">✓</span> todo cubierto</span><span><i class="dot" style="margin:0"></i> hay actividades</span></div></div><div class="card" style="margin:0">${panel}</div></div>`;
 }
 const pbar = (titulo, p, fest) => `<div class="card"><div class="pt"><span>${titulo}</span><b>${p}%</b></div><div class="bar"><i style="width:${p}%"></i></div>${fest ? '<p style="margin:8px 0 0;text-align:center;color:var(--ol);font-weight:600;font-size:.85rem">¡Completado al 100%! 🎉</p>' : ''}</div>`;
 
