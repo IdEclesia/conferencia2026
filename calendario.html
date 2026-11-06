@@ -118,7 +118,7 @@ const byOrden = (a, b) => a.orden.localeCompare(b.orden) || a.id - b.id;
 
 async function load() {
   try {
-    const [t, i, a, m, ac] = await Promise.all([get('tareas?select=*&order=id'), get('insumos?select=*&order=id'), get('asignaciones_publicas?select=*'), user ? rpc('mis_tareas', {p_vol: user.id}) : [], get('actividades?select=*&order=fecha,hora_inicio').catch(() => [])]);
+    const [t, i, a, m, ac] = await Promise.all([get('cal_tareas?select=*&order=id'), get('cal_insumos?select=*&order=id'), get('cal_asignaciones_publicas?select=*'), user ? rpc('cal_mis_tareas', {p_vol: user.id}) : [], get('cal_actividades?select=*&order=fecha,hora_inicio').catch(() => [])]);
     S.t = t; S.i = i; S.ac = ac; S.a = {}; a.forEach(x => (S.a[x.tarea_id] = S.a[x.tarea_id] || []).push(x.nombre)); S.m = new Set(m);
     render();
   } catch (e) { toast(e.message); }
@@ -208,20 +208,20 @@ document.addEventListener('click', async e => {
     else if (a === 'team') { team = v; renderModal(); }
     else if (a === 'close' || a === 'closeBg') { team = null; renderModal(); }
     else if (a === 'salirSesion') { store.del('vol'); user = null; S.m = new Set(); render(); }
-    else if (a === 'join') { const r = await rpc('unirse_tarea', {p_vol: user.id, p_tarea: +v}); if (MSG[r]) toast(MSG[r]); await load(); }
-    else if (a === 'leave') { await rpc('salir_tarea', {p_vol: user.id, p_tarea: +v}); await load(); }
-    else if (a === 'cover') { if (!(await rpc('cubrir_insumo', {p_vol: user.id, p_insumo: +v}))) toast('Alguien ya se anotó para traerlo.'); await load(); }
+    else if (a === 'join') { const r = await rpc('cal_unirse_tarea', {p_vol: user.id, p_tarea: +v}); if (MSG[r]) toast(MSG[r]); await load(); }
+    else if (a === 'leave') { await rpc('cal_salir_tarea', {p_vol: user.id, p_tarea: +v}); await load(); }
+    else if (a === 'cover') { if (!(await rpc('cal_cubrir_insumo', {p_vol: user.id, p_insumo: +v}))) toast('Alguien ya se anotó para traerlo.'); await load(); }
   } catch (x) { toast(x.message); }
 });
 document.addEventListener('change', async e => {
   const el = e.target;
   if (el.id === 'fEq') { fEq = el.value; render(); }
-  if (el.dataset.a === 'done') { try { await rpc('marcar_tarea', {p_vol: user.id, p_tarea: +el.dataset.v, p_hecha: el.checked}); await load(); } catch (x) { toast(x.message); } }
+  if (el.dataset.a === 'done') { try { await rpc('cal_marcar_tarea', {p_vol: user.id, p_tarea: +el.dataset.v, p_hecha: el.checked}); await load(); } catch (x) { toast(x.message); } }
 });
 document.addEventListener('submit', async e => {
   if (e.target.id !== 'fIns') return; e.preventDefault();
   const f = new FormData(e.target);
-  try { await rpc('agregar_insumo', {p_vol: user.id, p_equipo: team, p_nombre: f.get('n'), p_fecha: f.get('f'), p_entregar: f.get('e')}); toast('Insumo agregado.'); await load(); } catch (x) { toast(x.message); }
+  try { await rpc('cal_agregar_insumo', {p_vol: user.id, p_equipo: team, p_nombre: f.get('n'), p_fecha: f.get('f'), p_entregar: f.get('e')}); toast('Insumo agregado.'); await load(); } catch (x) { toast(x.message); }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && team) { team = null; renderModal(); } });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && user && !team) load(); });
@@ -230,12 +230,12 @@ $('reg').onsubmit = async e => {
   e.preventDefault(); $('re').hidden = true;
   const nombre = $('rn').value.trim(), edad = parseInt($('ra').value, 10), wa = $('rw').value.trim();
   if (nombre.length < 2 || !(edad >= 12 && edad <= 99) || wa.replace(/\D/g, '').length < 6) { $('re').textContent = 'Revisa que el nombre, la edad y el WhatsApp estén completos.'; $('re').hidden = false; return; }
-  try { user = await rpc('registrar_voluntario', {p_nombre: nombre, p_edad: edad, p_whatsapp: wa}); store.set('vol', user); await load(); }
+  try { user = await rpc('cal_registrar_voluntario', {p_nombre: nombre, p_edad: edad, p_whatsapp: wa}); store.set('vol', user); await load(); }
   catch (x) { $('re').textContent = x.message; $('re').hidden = false; }
 };
 
 { const n = new Date(); if (n.getFullYear() === AN && n.getMonth() + 1 === MS) selDay = n.getDate(); }
-render(); if (user) load(); else get('tareas?select=id&limit=1').catch(() => {});
+render(); if (user) load(); else get('cal_tareas?select=id&limit=1').catch(() => {});
 </script>
 </body>
 </html>
