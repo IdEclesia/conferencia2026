@@ -171,8 +171,8 @@ async function q(t, sel, ord) {
   ST[t] = r.error ? r.error.message : r.data.length; return r.data || [];
 }
 async function loadAll() {
-  [D.ins, D.t, D.i, D.a, D.v, D.ac] = await Promise.all([q(CFG.TABLA, '*', 'created_at'), q('tareas', '*', 'id'), q('insumos', '*', 'id'), q('inscripciones_tarea', 'tarea_id, voluntarios(id,nombre,whatsapp,edad)', null), q('voluntarios', '*', 'created_at'), q('actividades', '*', 'fecha')]);
-  D.ins = D.ins.map(norm); D.by = {}; D.a.forEach(x => x.voluntarios && (D.by[x.tarea_id] = D.by[x.tarea_id] || []).push(x.voluntarios));
+  [D.ins, D.t, D.i, D.a, D.v, D.ac] = await Promise.all([q(CFG.TABLA, '*', 'created_at'), q('cal_tareas', '*', 'id'), q('cal_insumos', '*', 'id'), q('cal_inscripciones_tarea', 'tarea_id, cal_voluntarios(id,nombre,whatsapp,edad)', null), q('cal_voluntarios', '*', 'created_at'), q('cal_actividades', '*', 'fecha')]);
+  D.ins = D.ins.map(norm); D.by = {}; D.a.forEach(x => x.cal_voluntarios && (D.by[x.tarea_id] = D.by[x.tarea_id] || []).push(x.cal_voluntarios));
   const igs = [...new Set(D.ins.map(r => r.iglesia))].sort(), fe = [...new Set(D.t.map(t => t.equipo))];
   $('fi').innerHTML = '<option value="">Iglesia: todas</option>' + igs.map(i => `<option>${esc(i)}</option>`).join('');
   $('fEq').innerHTML = '<option value="">Todos los equipos</option>' + fe.map(i => `<option>${esc(i)}</option>`).join('');
@@ -239,7 +239,7 @@ function vVol() {
   const fe = $('fEq').value, all = $('vAll').checked, ts = D.t.filter(t => (!fe || t.equipo === fe) && (all || !cubierta(t))).sort(byOrden);
   $('tt').innerHTML = ts.map(t => `<tr><td><b>${esc(t.titulo)}</b></td><td>${esc(t.equipo)}</td><td>${esc(t.fecha_texto)}</td><td><span class="chip${cubierta(t) ? '' : ' no'}">${vols(t).length} / ${ilim(t) ? '∞' : t.necesarios}</span></td><td>${vols(t).map(v => esc(v.nombre) + ' (' + wa(v.whatsapp) + ')').join('<br>') || '—'}</td></tr>`).join('') || '<tr><td colspan="5">Nada pendiente 🎉</td></tr>';
   $('ti').innerHTML = [...D.i].sort((a, b) => !!a.cubierto_por - !!b.cubierto_por).map(i => `<tr><td><b>${esc(i.nombre)}</b></td><td>${esc(i.equipo)}</td><td>${esc(i.fecha_texto)}</td><td>${esc(i.entregar_a)}</td><td>${i.cubierto_por ? `<span class="chip">Trae: ${esc(i.cubierto_nombre)}</span>` : '<span class="chip no">Falta</span>'}</td></tr>`).join('') || '<tr><td colspan="5">Sin insumos.</td></tr>';
-  const cnt = {}; D.a.forEach(x => x.voluntarios && (cnt[x.voluntarios.id] = (cnt[x.voluntarios.id] || 0) + 1));
+  const cnt = {}; D.a.forEach(x => x.cal_voluntarios && (cnt[x.cal_voluntarios.id] = (cnt[x.cal_voluntarios.id] || 0) + 1));
   $('tv').innerHTML = D.v.map(v => `<tr><td>${esc(v.nombre)}</td><td>${esc(v.edad)}</td><td>${wa(v.whatsapp)}</td><td>${cnt[v.id] || 0}</td><td>${new Date(v.created_at).toLocaleDateString('es')}</td></tr>`).join('') || '<tr><td colspan="5">Todavía no hay voluntarios.</td></tr>';
 }
 
@@ -261,19 +261,19 @@ function csv(name, head, rows) {
 }
 $('cp').onclick = () => copiar(view.map(r => r.email).join(', '), `Copiados ${view.length} correos.`);
 $('csv').onclick = () => csv('inscriptos-conferencia.csv', ['Nombre', 'Correo', 'WhatsApp', 'Iglesia', 'Reuniones', 'Adultos acompañantes', 'Niños', 'Detalle niños', 'Fecha', 'Regalo enviado'], view.map(r => [r.nombre, r.email, r.wa, r.iglesia, r.pl.map(p => PLEN[p] || p).join(' | '), r.ad, r.kids, r.det, r.f, r.reg ? 'Sí' : 'No']));
-$('csvV').onclick = () => csv('voluntarios.csv', ['Nombre', 'Edad', 'WhatsApp', 'Tareas', 'Registro'], D.v.map(v => [v.nombre, v.edad, v.whatsapp, D.a.filter(x => x.voluntarios && x.voluntarios.id === v.id).length, v.created_at]));
+$('csvV').onclick = () => csv('voluntarios.csv', ['Nombre', 'Edad', 'WhatsApp', 'Tareas', 'Registro'], D.v.map(v => [v.nombre, v.edad, v.whatsapp, D.a.filter(x => x.cal_voluntarios && x.cal_voluntarios.id === v.id).length, v.created_at]));
 
 $('af').onsubmit = async e => {
   e.preventDefault();
   const row = {titulo: $('at').value.trim(), fecha: $('ad').value, hora_inicio: $('ah1').value || null, hora_fin: $('ah2').value || null, detalle: $('adt').value.trim() || null};
   if (row.titulo.length < 2 || !row.fecha) return toast('Completa el título y la fecha.');
-  const {error} = await sb.from('actividades').insert(row);
+  const {error} = await sb.from('cal_actividades').insert(row);
   if (error) return toast('No se pudo guardar: ' + error.message + ' (¿ya ejecutaste actividades.sql?)');
   e.target.reset(); $('ad').value = row.fecha; toast('Actividad agregada al calendario.'); loadAll();
 };
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-del]'); if (!b || !confirm('¿Borrar esta actividad del calendario?')) return;
-  const {error} = await sb.from('actividades').delete().eq('id', b.dataset.del);
+  const {error} = await sb.from('cal_actividades').delete().eq('id', b.dataset.del);
   if (error) return toast('No se pudo borrar: ' + error.message);
   toast('Actividad borrada.'); loadAll();
 });
