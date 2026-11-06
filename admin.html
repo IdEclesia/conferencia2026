@@ -50,6 +50,10 @@ a{color:var(--od)}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rj);margin-left:4px;vertical-align:middle}.ev .dot{background:#fff}
 @media(max-width:520px){.cal{gap:4px}.cal button.d{min-height:50px;padding:3px 4px;font-size:.9rem}.cal .b em{display:none}.tabs button{padding:8px 10px;font-size:.85rem}}
 .cal .b em{font-style:normal}
+.plg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:16px}
+.pc{background:#fff;border:1px solid var(--bd);border-radius:12px;overflow:hidden}.pc header{display:block;padding:10px 14px}.pc header b{display:block;font-size:1.05rem;font-weight:800}.pc header small{opacity:.9;font-size:.78rem}
+.pc .r{display:flex;justify-content:space-between;align-items:baseline;padding:7px 14px;border-bottom:1px solid var(--mt);font-size:.88rem}.pc .r b{font-size:1.25rem;font-weight:800;color:var(--ol)}.pc .r b.z{color:#b9bfa8}
+.pc .r.s{padding:4px 14px 4px 28px;font-size:.82rem;color:#555;border-bottom:0}.pc .r.s b{font-size:.95rem}.pc .r.t{background:var(--mt);border-bottom:0}.pc .r.t b{color:var(--tx)}
 </style>
 </head>
 <body>
@@ -72,6 +76,8 @@ a{color:var(--od)}
 
   <section data-p="res">
     <div class="kpis" id="kpis"></div>
+    <h2 style="margin:4px 0 10px">Control por plenaria</h2>
+    <div class="plg" id="plg"></div>
     <div class="cols">
       <div class="card"><h2>Asistencia por reunión</h2><div id="bPl"></div></div>
       <div class="card"><h2>Inscriptos por iglesia</h2><div id="bIg"></div></div>
@@ -195,7 +201,7 @@ function dias(t) {
 
 // ---- vistas
 function bars(el, e) { const max = Math.max(1, ...e.map(x => x[1])); el.innerHTML = e.length ? e.map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><i style="width:${v / max * 100}%"></i><span>${v}</span></div>`).join('') : '<p class="st">Todavía no hay datos.</p>'; }
-function render() { vRes(); vAgenda(); vAc(); vIns(); vVol(); }
+function render() { vRes(); vPlen(); vAgenda(); vAc(); vIns(); vVol(); }
 function vRes() {
   const R = D.ins, ad = R.reduce((a, r) => a + r.ad, 0), ni = R.reduce((a, r) => a + r.kids, 0), igs = {};
   R.forEach(r => { const k = r.iglesia.toLowerCase(); (igs[k] = igs[k] || [r.iglesia, 0])[1]++; });
@@ -206,6 +212,20 @@ function vRes() {
   bars($('bIg'), Object.values(igs).sort((a, b) => b[1] - a[1]).slice(0, 12));
   const dd = {}; [...R].reverse().forEach(r => { if (!r.f) return; const d = new Date(r.f).toLocaleDateString('es', {day: '2-digit', month: 'short'}); dd[d] = (dd[d] || 0) + 1; }); bars($('bDia'), Object.entries(dd));
   $('conn').innerHTML = Object.entries(ST).map(([t, v]) => typeof v === 'number' ? `${esc(t)}: ✔ ${v} filas` : `<b>${esc(t)}: ✖ ${esc(v)}</b>`).join(' · ');
+}
+const EDAD = [['De 0 a 4', 0, 4], ['De 5 a 8', 5, 8], ['De 9 a 11', 9, 11], ['De 12 a 17', 12, 99]];
+const edades = r => [...String(r.det || '').matchAll(/(\d{1,2})\s*años?/gi)].map(m => +m[1]);
+function vPlen() {
+  const z = n => `<b${n ? '' : ' class="z"'}>${n}</b>`;
+  $('plg').innerHTML = Object.entries(PLEN).map(([id, t]) => {
+    const R = D.ins.filter(r => r.pl.includes(id)), ad = R.reduce((a, r) => a + r.ad, 0), ni = R.reduce((a, r) => a + r.kids, 0), b = EDAD.map(() => 0); let sin = 0;
+    R.forEach(r => { const e = edades(r); e.forEach(x => { const i = EDAD.findIndex(f => x >= f[1] && x <= f[2]); if (i >= 0) b[i]++; }); sin += Math.max(0, r.kids - e.length); });
+    const [dia, nom] = t.split(' · ');
+    return `<div class="pc"><header style="background:${id === 'p6' ? 'var(--rj)' : 'var(--ol)'};color:#fff"><b>${esc(nom)}</b><small>${esc(dia)} · ${PHORA[id]} hs</small></header>
+      <div class="r"><span>Inscritos</span>${z(R.length)}</div><div class="r"><span>Acompañantes adultos</span>${z(ad)}</div><div class="r"><span>Niños</span>${z(ni)}</div>
+      ${EDAD.map((f, i) => `<div class="r s"><span>${f[0]}</span>${z(b[i])}</div>`).join('')}${sin ? `<div class="r s"><span>Sin edad indicada</span>${z(sin)}</div>` : ''}
+      <div class="r t"><span>Total de personas</span>${z(R.length + ad + ni)}</div></div>`;
+  }).join('');
 }
 function vAgenda() {
   const first = new Date(CFG.ANIO, CFG.MES - 1, 1).getDay(), n = new Date(CFG.ANIO, CFG.MES, 0).getDate(), hoy = new Date(), map = {};
