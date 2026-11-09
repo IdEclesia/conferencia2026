@@ -147,12 +147,12 @@ const CFG = {
 
 const _supabase = supabase.createClient(CFG.URL, CFG.KEY);
 const PLEN = [
-  ['p1','Viernes 20/11: Plenaria 1','19:00 a 21:00 hs'],
-  ['p2','Sábado 21/11: Plenaria 2','16:30 a 17:30 hs'],
-  ['p3','Sábado 21/11: Plenaria 3','17:30 a 19:00 hs'],
-  ['p4','Sábado 21/11: Plenaria 4','19:30 a 21:30 hs'],
-  ['p5','Domingo 22/11: Plenaria 5','09:30 a 11:00 hs'],
-  ['p6','Domingo 22/11: Culto General','11:00 a 12:00 hs']
+  ['p1','Viernes 20/11: Plenaria 1','19:00hs'],
+  ['p2','Sábado 21/11: Plenaria 2','14:30hs'],
+  ['p3','Sábado 21/11: Plenaria 3','17:00hs'],
+  ['p4','Sábado 21/11: Plenaria 4','19:30hs'],
+  ['p5','Domingo 22/11: Plenaria 5','09:30hs'],
+  ['p6','Domingo 22/11: Culto General','11:00hs']
 ];
 const $ = id => document.getElementById(id);
 $('pl').innerHTML = PLEN.map(([k,t,h]) => `<label class="chk"><input type="checkbox" name="pl" value="${k}"><span>${t}<small>${h}</small></span></label>`).join('');
